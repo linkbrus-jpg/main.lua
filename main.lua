@@ -56,6 +56,100 @@ local function makeDraggable(guiObject)
 end
 
 -- ==========================================
+-- SISTEM NOTIFIKASI POP-UP
+-- ==========================================
+function UILibrary:Notification(title, text, duration)
+    duration = duration or 4
+    local PlayerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
+    local NotifGui = PlayerGui:FindFirstChild("PremiumUILibrary_Notif")
+    
+    if not NotifGui then
+        NotifGui = Instance.new("ScreenGui")
+        NotifGui.Name = "PremiumUILibrary_Notif"
+        NotifGui.ResetOnSpawn = false
+        NotifGui.Parent = PlayerGui
+        
+        local Holder = Instance.new("Frame")
+        Holder.Name = "Holder"
+        Holder.Size = UDim2.new(0, 280, 1, -40)
+        Holder.Position = UDim2.new(1, -290, 0, 20)
+        Holder.BackgroundTransparency = 1
+        Holder.Parent = NotifGui
+        
+        local Layout = Instance.new("UIListLayout", Holder)
+        Layout.VerticalAlignment = Enum.VerticalAlignment.Bottom
+        Layout.SortOrder = Enum.SortOrder.LayoutOrder
+        Layout.Padding = UDim.new(0, 8)
+    end
+    
+    local Holder = NotifGui.Holder
+    
+    -- Base Frame transparan untuk menjaga layout posisi tetap aman saat animasi
+    local BaseFrame = Instance.new("Frame")
+    BaseFrame.Size = UDim2.new(1, 0, 0, 65)
+    BaseFrame.BackgroundTransparency = 1
+    BaseFrame.Parent = Holder
+    
+    local NotifFrame = Instance.new("Frame")
+    NotifFrame.Size = UDim2.new(1, 0, 1, 0)
+    NotifFrame.Position = UDim2.new(1.3, 0, 0, 0) -- Mulai dari luar layar sebelah kanan
+    NotifFrame.BackgroundColor3 = Theme.Sidebar
+    NotifFrame.Parent = BaseFrame
+    
+    Instance.new("UICorner", NotifFrame).CornerRadius = UDim.new(0, 6)
+    local Stroke = Instance.new("UIStroke", NotifFrame)
+    Stroke.Color = Theme.Border
+    
+    -- Garis Aksen Kiri (Neon)
+    local AccentBar = Instance.new("Frame")
+    AccentBar.Size = UDim2.new(0, 4, 1, 0)
+    AccentBar.BackgroundColor3 = Theme.Accent
+    AccentBar.Parent = NotifFrame
+    Instance.new("UICorner", AccentBar).CornerRadius = UDim.new(0, 6)
+    
+    local TitleLabel = Instance.new("TextLabel")
+    TitleLabel.Size = UDim2.new(1, -24, 0, 20)
+    TitleLabel.Position = UDim2.new(0, 14, 0, 6)
+    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.Text = title or "Notification"
+    TitleLabel.TextColor3 = Theme.TextMain
+    TitleLabel.Font = Enum.Font.GothamBold
+    TitleLabel.TextSize = 12
+    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    TitleLabel.Parent = NotifFrame
+    
+    local TextLabel = Instance.new("TextLabel")
+    TextLabel.Size = UDim2.new(1, -24, 1, -30)
+    TextLabel.Position = UDim2.new(0, 14, 0, 26)
+    TextLabel.BackgroundTransparency = 1
+    TextLabel.Text = text or ""
+    TextLabel.TextColor3 = Theme.TextDark
+    TextLabel.Font = Enum.Font.Gotham
+    TextLabel.TextSize = 11
+    TextLabel.TextXAlignment = Enum.TextXAlignment.Left
+    TextLabel.TextYAlignment = Enum.TextYAlignment.Top
+    TextLabel.TextWrapped = true
+    TextLabel.Parent = NotifFrame
+    
+    -- Animasi Masuk (Slide In)
+    TweenService:Create(NotifFrame, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.new(0, 0, 0, 0)}):Play()
+    
+    -- Animasi Keluar dan Hancurkan
+    task.delay(duration, function()
+        local tweenOut = TweenService:Create(NotifFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(1.3, 0, 0, 0)})
+        TweenService:Create(Stroke, TweenInfo.new(0.2), {Transparency = 1}):Play()
+        TweenService:Create(AccentBar, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
+        TweenService:Create(TitleLabel, TweenInfo.new(0.2), {TextTransparency = 1}):Play()
+        TweenService:Create(TextLabel, TweenInfo.new(0.2), {TextTransparency = 1}):Play()
+        
+        tweenOut:Play()
+        tweenOut.Completed:Connect(function()
+            BaseFrame:Destroy()
+        end)
+    end)
+end
+
+-- ==========================================
 -- 1. UTAMA: MEMBUAT WINDOW (JENDELA UTAMA)
 -- ==========================================
 function UILibrary.CreateWindow(config)
@@ -89,7 +183,7 @@ function UILibrary.CreateWindow(config)
 
     -- MAIN FRAME
     local MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(0, 500, 0, 320) -- Sedikit dilebarkan untuk space yang lega
+    MainFrame.Size = UDim2.new(0, 500, 0, 320)
     MainFrame.Position = UDim2.new(0.5, -250, 0.5, -160)
     MainFrame.BackgroundColor3 = Theme.Background
     MainFrame.Parent = ScreenGui
@@ -246,8 +340,47 @@ function UILibrary:CreateTab(name, iconId)
 end
 
 -- ==========================================
--- 3. KOMPONEN: SECTION & PARAGRAPH
+-- 3. KOMPONEN: STATION (CONTAINER WRAPPER) & SECTION
 -- ==========================================
+function Tab:AddStation(title)
+    local StationFrame = Instance.new("Frame")
+    StationFrame.Size = UDim2.new(1, 0, 0, 0)
+    StationFrame.AutomaticSize = Enum.AutomaticSize.Y
+    StationFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 17) -- Kontras warna sedikit lebih terang dari bg utama
+    StationFrame.Parent = self.Page
+    Instance.new("UICorner", StationFrame).CornerRadius = UDim.new(0, 6)
+    local StationStroke = Instance.new("UIStroke", StationFrame)
+    StationStroke.Color = Theme.Border
+
+    local StationLayout = Instance.new("UIListLayout", StationFrame)
+    StationLayout.Padding = UDim.new(0, 5)
+    StationLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+    local StationPadding = Instance.new("UIPadding", StationFrame)
+    StationPadding.PaddingTop = UDim.new(0, 8)
+    StationPadding.PaddingBottom = UDim.new(0, 8)
+    StationPadding.PaddingLeft = UDim.new(0, 8)
+    StationPadding.PaddingRight = UDim.new(0, 8)
+
+    if title then
+        local TitleLabel = Instance.new("TextLabel")
+        TitleLabel.Size = UDim2.new(1, 0, 0, 18)
+        TitleLabel.BackgroundTransparency = 1
+        TitleLabel.Text = title:upper()
+        TitleLabel.TextColor3 = Theme.Accent
+        TitleLabel.Font = Enum.Font.GothamBold
+        TitleLabel.TextSize = 10
+        TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+        TitleLabel.Parent = StationFrame
+    end
+
+    -- Inject metatable redirection agar Station bertingkah seperti Tab (mendukung semua komponen di bawah)
+    local StationObj = setmetatable({}, { __index = self })
+    StationObj.Page = StationFrame -- Mengalihkan tujuan pembuatan objek ke dalam frame Station ini
+    
+    return StationObj
+end
+
 function Tab:AddSection(text)
     local SectionFrame = Instance.new("Frame")
     SectionFrame.Size = UDim2.new(1, 0, 0, 24)
@@ -505,7 +638,6 @@ end
 -- ==========================================
 -- 7. KOMPONEN: DROPDOWN & TOGGLE & BUTTON
 -- ==========================================
--- (Dropdown, Toggle, & Button tetap sama seperti sebelumnya, gabungkan fungsi AddDropdown, AddToggle, dan AddButton di sini)
 function Tab:AddDropdown(text, options, defaultOption, callback)
     local isDropped = false
     local selected = defaultOption or options[1] or "Select..."
@@ -635,6 +767,12 @@ function Tab:AddToggle(text, defaultState, callback)
     InsideCircle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     Instance.new("UICorner", InsideCircle).CornerRadius = UDim.new(1, 0)
 
+    [[ ToggleBtn.MouseButton1Click:Connect(function()
+        state = not state
+        TweenService:Create(ToggleBtn, TweenInfo.new(0.18), {BackgroundColor3 = state and Theme.Accent or Color3.fromRGB(30, 30, 35)}):Play()
+        TweenService:Create(InsideCircle, TweenInfo.new(0.15), {Position = state and UDim2.new(1, -13, 0.5, -5) or UDim2.new(0, 3, 0.5, -5)}):Play()
+        if callback then callback(state) end
+    end) ]]
     ToggleBtn.MouseButton1Click:Connect(function()
         state = not state
         TweenService:Create(ToggleBtn, TweenInfo.new(0.18), {BackgroundColor3 = state and Theme.Accent or Color3.fromRGB(30, 30, 35)}):Play()
