@@ -84,17 +84,13 @@ function UILibrary.CreateWindow(config)
     OpenStroke.Color = Theme.Border
     makeDraggable(OpenButton)
 
-    OpenButton.MouseEnter:Connect(function()
-        TweenService:Create(OpenStroke, TweenInfo.new(0.2), {Color = Theme.Accent}):Play()
-    end)
-    OpenButton.MouseLeave:Connect(function()
-        TweenService:Create(OpenStroke, TweenInfo.new(0.2), {Color = Theme.Border}):Play()
-    end)
+    OpenButton.MouseEnter:Connect(function() TweenService:Create(OpenStroke, TweenInfo.new(0.2), {Color = Theme.Accent}):Play() end)
+    OpenButton.MouseLeave:Connect(function() TweenService:Create(OpenStroke, TweenInfo.new(0.2), {Color = Theme.Border}):Play() end)
 
     -- MAIN FRAME
     local MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(0, 480, 0, 300)
-    MainFrame.Position = UDim2.new(0.5, -240, 0.5, -150)
+    MainFrame.Size = UDim2.new(0, 500, 0, 320) -- Sedikit dilebarkan untuk space yang lega
+    MainFrame.Position = UDim2.new(0.5, -250, 0.5, -160)
     MainFrame.BackgroundColor3 = Theme.Background
     MainFrame.Parent = ScreenGui
     Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
@@ -131,16 +127,12 @@ function UILibrary.CreateWindow(config)
     Instance.new("UICorner", CloseButton).CornerRadius = UDim.new(1, 0)
     Instance.new("UIStroke", CloseButton).Color = Theme.Border
 
-    CloseButton.MouseEnter:Connect(function()
-        TweenService:Create(CloseButton, TweenInfo.new(0.2), {BackgroundColor3 = Theme.Accent, TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
-    end)
-    CloseButton.MouseLeave:Connect(function()
-        TweenService:Create(CloseButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(24, 24, 27), TextColor3 = Theme.TextDark}):Play()
-    end)
+    CloseButton.MouseEnter:Connect(function() TweenService:Create(CloseButton, TweenInfo.new(0.2), {BackgroundColor3 = Theme.Accent, TextColor3 = Color3.fromRGB(255, 255, 255)}):Play() end)
+    CloseButton.MouseLeave:Connect(function() TweenService:Create(CloseButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(24, 24, 27), TextColor3 = Theme.TextDark}):Play() end)
 
     -- SIDEBAR
     local SidebarBg = Instance.new("Frame")
-    SidebarBg.Size = UDim2.new(0, 125, 1, -48)
+    SidebarBg.Size = UDim2.new(0, 130, 1, -48)
     SidebarBg.Position = UDim2.new(0, 10, 0, 38)
     SidebarBg.BackgroundColor3 = Theme.Sidebar
     SidebarBg.Parent = MainFrame
@@ -158,8 +150,8 @@ function UILibrary.CreateWindow(config)
 
     -- CONTAINER HOLDER
     local ContainerHolder = Instance.new("Frame")
-    ContainerHolder.Size = UDim2.new(1, -155, 1, -48)
-    ContainerHolder.Position = UDim2.new(0, 145, 0, 38)
+    ContainerHolder.Size = UDim2.new(1, -160, 1, -48)
+    ContainerHolder.Position = UDim2.new(0, 150, 0, 38)
     ContainerHolder.BackgroundTransparency = 1
     ContainerHolder.Parent = MainFrame
 
@@ -178,7 +170,7 @@ function UILibrary.CreateWindow(config)
 end
 
 -- ==========================================
--- 2. SISTEM TAB (DENGAN IKON LUCIDE)
+-- 2. SISTEM TAB 
 -- ==========================================
 function UILibrary:CreateTab(name, iconId)
     local currentWindow = self
@@ -199,16 +191,14 @@ function UILibrary:CreateTab(name, iconId)
     TabStroke.Color = Theme.Border
     TabStroke.Transparency = 1
 
-    -- Mengatur jarak teks jika ada ikon
     local Padding = Instance.new("UIPadding", TabButton)
     Padding.PaddingLeft = UDim.new(0, iconId and 28 or 10)
 
-    -- Membuat Ikon (Jika tersedia)
     local TabIcon
     if iconId then
         TabIcon = Instance.new("ImageLabel")
         TabIcon.Size = UDim2.new(0, 14, 0, 14)
-        TabIcon.Position = UDim2.new(0, -20, 0.5, -7) -- Posisi relatif ke PaddingLeft
+        TabIcon.Position = UDim2.new(0, -20, 0.5, -7)
         TabIcon.BackgroundTransparency = 1
         TabIcon.Image = iconId
         TabIcon.ImageColor3 = Theme.TextDark
@@ -239,32 +229,283 @@ function UILibrary:CreateTab(name, iconId)
             if v:IsA("TextButton") then 
                 TweenService:Create(v, TweenInfo.new(0.15), {TextColor3 = Theme.TextDark, BackgroundTransparency = 1}):Play()
                 v.UIStroke.Transparency = 1
-                if v:FindFirstChild("ImageLabel") then
-                    TweenService:Create(v.ImageLabel, TweenInfo.new(0.15), {ImageColor3 = Theme.TextDark}):Play()
-                end
+                if v:FindFirstChild("ImageLabel") then TweenService:Create(v.ImageLabel, TweenInfo.new(0.15), {ImageColor3 = Theme.TextDark}):Play() end
             end
         end
         TabPage.Visible = true
         TweenService:Create(TabButton, TweenInfo.new(0.15), {TextColor3 = Theme.TextMain, BackgroundTransparency = 0}):Play()
         TabStroke.Transparency = 0
-        if TabIcon then
-            TweenService:Create(TabIcon, TweenInfo.new(0.15), {ImageColor3 = Theme.Accent}):Play() -- Ikon menyala merah
-        end
+        if TabIcon then TweenService:Create(TabIcon, TweenInfo.new(0.15), {ImageColor3 = Theme.Accent}):Play() end
     end
 
     TabButton.MouseButton1Click:Connect(activateTab)
-
-    if #currentWindow.Sidebar:GetChildren() == 2 then
-        activateTab()
-    end
+    if #currentWindow.Sidebar:GetChildren() == 2 then activateTab() end
 
     TabObj.Page = TabPage
     return TabObj
 end
 
 -- ==========================================
--- 3. KOMPONEN: DROPDOWN (BARU!)
+-- 3. KOMPONEN: SECTION & PARAGRAPH
 -- ==========================================
+function Tab:AddSection(text)
+    local SectionFrame = Instance.new("Frame")
+    SectionFrame.Size = UDim2.new(1, 0, 0, 24)
+    SectionFrame.BackgroundTransparency = 1
+    SectionFrame.Parent = self.Page
+
+    local Label = Instance.new("TextLabel")
+    Label.Size = UDim2.new(1, -5, 1, 0)
+    Label.Position = UDim2.new(0, 5, 0, 0)
+    Label.BackgroundTransparency = 1
+    Label.Text = text
+    Label.TextColor3 = Theme.Accent
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.Font = Enum.Font.GothamBold
+    Label.TextSize = 13
+    Label.Parent = SectionFrame
+end
+
+function Tab:AddParagraph(title, text)
+    local ParaFrame = Instance.new("Frame")
+    ParaFrame.Size = UDim2.new(1, 0, 0, 58)
+    ParaFrame.BackgroundColor3 = Theme.Element
+    ParaFrame.Parent = self.Page
+    Instance.new("UICorner", ParaFrame).CornerRadius = UDim.new(0, 6)
+    Instance.new("UIStroke", ParaFrame).Color = Theme.Border
+
+    local TitleLabel = Instance.new("TextLabel")
+    TitleLabel.Size = UDim2.new(1, -24, 0, 20)
+    TitleLabel.Position = UDim2.new(0, 12, 0, 6)
+    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.Text = title
+    TitleLabel.TextColor3 = Theme.TextMain
+    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    TitleLabel.Font = Enum.Font.GothamMedium
+    TitleLabel.TextSize = 12
+    TitleLabel.Parent = ParaFrame
+
+    local TextLabel = Instance.new("TextLabel")
+    TextLabel.Size = UDim2.new(1, -24, 1, -30)
+    TextLabel.Position = UDim2.new(0, 12, 0, 26)
+    TextLabel.BackgroundTransparency = 1
+    TextLabel.Text = text
+    TextLabel.TextColor3 = Theme.TextDark
+    TextLabel.TextXAlignment = Enum.TextXAlignment.Left
+    TextLabel.TextYAlignment = Enum.TextYAlignment.Top
+    TextLabel.Font = Enum.Font.Gotham
+    TextLabel.TextSize = 11
+    TextLabel.TextWrapped = true
+    TextLabel.Parent = ParaFrame
+end
+
+-- ==========================================
+-- 4. KOMPONEN: INPUT (TextBox)
+-- ==========================================
+function Tab:AddInput(text, placeholder, callback)
+    local InputFrame = Instance.new("Frame")
+    InputFrame.Size = UDim2.new(1, 0, 0, 36)
+    InputFrame.BackgroundColor3 = Theme.Element
+    InputFrame.Parent = self.Page
+    Instance.new("UICorner", InputFrame).CornerRadius = UDim.new(0, 6)
+    Instance.new("UIStroke", InputFrame).Color = Theme.Border
+
+    local Label = Instance.new("TextLabel")
+    Label.Size = UDim2.new(0.5, 0, 1, 0)
+    Label.Position = UDim2.new(0, 12, 0, 0)
+    Label.BackgroundTransparency = 1
+    Label.Text = text
+    Label.TextColor3 = Theme.TextMain
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.Font = Enum.Font.GothamMedium
+    Label.TextSize = 12
+    Label.Parent = InputFrame
+
+    local TextBoxBg = Instance.new("Frame")
+    TextBoxBg.Size = UDim2.new(0.4, 0, 0, 24)
+    TextBoxBg.Position = UDim2.new(0.6, -12, 0.5, -12)
+    TextBoxBg.BackgroundColor3 = Color3.fromRGB(15, 15, 17)
+    TextBoxBg.Parent = InputFrame
+    Instance.new("UICorner", TextBoxBg).CornerRadius = UDim.new(0, 4)
+    local BoxStroke = Instance.new("UIStroke", TextBoxBg)
+    BoxStroke.Color = Theme.Border
+
+    local TextBox = Instance.new("TextBox")
+    TextBox.Size = UDim2.new(1, -10, 1, 0)
+    TextBox.Position = UDim2.new(0, 5, 0, 0)
+    TextBox.BackgroundTransparency = 1
+    TextBox.Text = ""
+    TextBox.PlaceholderText = placeholder or "Tulis disini..."
+    TextBox.TextColor3 = Theme.TextMain
+    TextBox.PlaceholderColor3 = Theme.TextDark
+    TextBox.Font = Enum.Font.Gotham
+    TextBox.TextSize = 11
+    TextBox.TextXAlignment = Enum.TextXAlignment.Left
+    TextBox.ClearTextOnFocus = false
+    TextBox.Parent = TextBoxBg
+
+    TextBox.Focused:Connect(function() TweenService:Create(BoxStroke, TweenInfo.new(0.2), {Color = Theme.Accent}):Play() end)
+    TextBox.FocusLost:Connect(function()
+        TweenService:Create(BoxStroke, TweenInfo.new(0.2), {Color = Theme.Border}):Play()
+        if callback then callback(TextBox.Text) end
+    end)
+end
+
+-- ==========================================
+-- 5. KOMPONEN: SLIDER
+-- ==========================================
+function Tab:AddSlider(text, min, max, default, callback)
+    local SliderValue = math.clamp(default or min, min, max)
+
+    local SliderFrame = Instance.new("Frame")
+    SliderFrame.Size = UDim2.new(1, 0, 0, 46)
+    SliderFrame.BackgroundColor3 = Theme.Element
+    SliderFrame.Parent = self.Page
+    Instance.new("UICorner", SliderFrame).CornerRadius = UDim.new(0, 6)
+    Instance.new("UIStroke", SliderFrame).Color = Theme.Border
+
+    local Label = Instance.new("TextLabel")
+    Label.Size = UDim2.new(0.7, 0, 0, 20)
+    Label.Position = UDim2.new(0, 12, 0, 5)
+    Label.BackgroundTransparency = 1
+    Label.Text = text
+    Label.TextColor3 = Theme.TextMain
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.Font = Enum.Font.GothamMedium
+    Label.TextSize = 12
+    Label.Parent = SliderFrame
+
+    local ValueLabel = Instance.new("TextLabel")
+    ValueLabel.Size = UDim2.new(0.3, 0, 0, 20)
+    ValueLabel.Position = UDim2.new(0.7, -12, 0, 5)
+    ValueLabel.BackgroundTransparency = 1
+    ValueLabel.Text = tostring(SliderValue)
+    ValueLabel.TextColor3 = Theme.TextDark
+    ValueLabel.TextXAlignment = Enum.TextXAlignment.Right
+    ValueLabel.Font = Enum.Font.Gotham
+    ValueLabel.TextSize = 11
+    ValueLabel.Parent = SliderFrame
+
+    local TrackBg = Instance.new("Frame")
+    TrackBg.Size = UDim2.new(1, -24, 0, 6)
+    TrackBg.Position = UDim2.new(0, 12, 0, 30)
+    TrackBg.BackgroundColor3 = Color3.fromRGB(15, 15, 17)
+    TrackBg.Parent = SliderFrame
+    Instance.new("UICorner", TrackBg).CornerRadius = UDim.new(1, 0)
+
+    local Fill = Instance.new("Frame")
+    Fill.Size = UDim2.new((SliderValue - min) / (max - min), 0, 1, 0)
+    Fill.BackgroundColor3 = Theme.Accent
+    Fill.Parent = TrackBg
+    Instance.new("UICorner", Fill).CornerRadius = UDim.new(1, 0)
+
+    local SliderBtn = Instance.new("TextButton")
+    SliderBtn.Size = UDim2.new(1, 0, 1, 0)
+    SliderBtn.BackgroundTransparency = 1
+    SliderBtn.Text = ""
+    SliderBtn.Parent = TrackBg
+
+    local dragging = false
+    local function updateSlider(input)
+        local pos = math.clamp((input.Position.X - TrackBg.AbsolutePosition.X) / TrackBg.AbsoluteSize.X, 0, 1)
+        SliderValue = math.floor(min + ((max - min) * pos))
+        ValueLabel.Text = tostring(SliderValue)
+        TweenService:Create(Fill, TweenInfo.new(0.1, Enum.EasingStyle.Quad), {Size = UDim2.new(pos, 0, 1, 0)}):Play()
+        if callback then callback(SliderValue) end
+    end
+
+    SliderBtn.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            updateSlider(input)
+        end
+    end)
+
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            updateSlider(input)
+        end
+    end)
+end
+
+-- ==========================================
+-- 6. KOMPONEN: KEYBIND
+-- ==========================================
+function Tab:AddKeybind(text, defaultKey, callback)
+    local key = defaultKey or Enum.KeyCode.Unknown
+    local isBinding = false
+
+    local KeybindFrame = Instance.new("Frame")
+    KeybindFrame.Size = UDim2.new(1, 0, 0, 36)
+    KeybindFrame.BackgroundColor3 = Theme.Element
+    KeybindFrame.Parent = self.Page
+    Instance.new("UICorner", KeybindFrame).CornerRadius = UDim.new(0, 6)
+    Instance.new("UIStroke", KeybindFrame).Color = Theme.Border
+
+    local Label = Instance.new("TextLabel")
+    Label.Size = UDim2.new(0.6, 0, 1, 0)
+    Label.Position = UDim2.new(0, 12, 0, 0)
+    Label.BackgroundTransparency = 1
+    Label.Text = text
+    Label.TextColor3 = Theme.TextMain
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.Font = Enum.Font.GothamMedium
+    Label.TextSize = 12
+    Label.Parent = KeybindFrame
+
+    local KeyBtnBg = Instance.new("Frame")
+    KeyBtnBg.Size = UDim2.new(0, 65, 0, 22)
+    KeyBtnBg.Position = UDim2.new(1, -77, 0.5, -11)
+    KeyBtnBg.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    KeyBtnBg.Parent = KeybindFrame
+    Instance.new("UICorner", KeyBtnBg).CornerRadius = UDim.new(0, 4)
+    local KeyStroke = Instance.new("UIStroke", KeyBtnBg)
+    KeyStroke.Color = Theme.Border
+
+    local KeyBtn = Instance.new("TextButton")
+    KeyBtn.Size = UDim2.new(1, 0, 1, 0)
+    KeyBtn.BackgroundTransparency = 1
+    KeyBtn.Text = key == Enum.KeyCode.Unknown and "None" or key.Name
+    KeyBtn.TextColor3 = Theme.TextMain
+    KeyBtn.Font = Enum.Font.GothamMedium
+    KeyBtn.TextSize = 11
+    KeyBtn.Parent = KeyBtnBg
+
+    KeyBtn.MouseButton1Click:Connect(function()
+        isBinding = true
+        KeyBtn.Text = "..."
+        KeyStroke.Color = Theme.Accent
+    end)
+
+    UserInputService.InputBegan:Connect(function(input, processed)
+        if not isBinding and input.KeyCode == key and key ~= Enum.KeyCode.Unknown and not processed then
+            if callback then callback() end
+        end
+
+        if isBinding and input.UserInputType == Enum.UserInputType.Keyboard then
+            if input.KeyCode == Enum.KeyCode.Escape or input.KeyCode == Enum.KeyCode.Backspace then
+                key = Enum.KeyCode.Unknown
+                KeyBtn.Text = "None"
+            else
+                key = input.KeyCode
+                KeyBtn.Text = key.Name
+            end
+            isBinding = false
+            KeyStroke.Color = Theme.Border
+        end
+    end)
+end
+
+-- ==========================================
+-- 7. KOMPONEN: DROPDOWN & TOGGLE & BUTTON
+-- ==========================================
+-- (Dropdown, Toggle, & Button tetap sama seperti sebelumnya, gabungkan fungsi AddDropdown, AddToggle, dan AddButton di sini)
 function Tab:AddDropdown(text, options, defaultOption, callback)
     local isDropped = false
     local selected = defaultOption or options[1] or "Select..."
@@ -272,12 +513,11 @@ function Tab:AddDropdown(text, options, defaultOption, callback)
     local DropdownFrame = Instance.new("Frame")
     DropdownFrame.Size = UDim2.new(1, 0, 0, 36)
     DropdownFrame.BackgroundColor3 = Theme.Element
-    DropdownFrame.ClipsDescendants = true -- Supaya opsi tersembunyi saat ditutup
+    DropdownFrame.ClipsDescendants = true
     DropdownFrame.Parent = self.Page
     Instance.new("UICorner", DropdownFrame).CornerRadius = UDim.new(0, 6)
     Instance.new("UIStroke", DropdownFrame).Color = Theme.Border
 
-    -- Tombol Header Dropdown
     local HeaderBtn = Instance.new("TextButton")
     HeaderBtn.Size = UDim2.new(1, 0, 0, 36)
     HeaderBtn.BackgroundTransparency = 1
@@ -310,11 +550,10 @@ function Tab:AddDropdown(text, options, defaultOption, callback)
     Arrow.Size = UDim2.new(0, 14, 0, 14)
     Arrow.Position = UDim2.new(1, -20, 0.5, -7)
     Arrow.BackgroundTransparency = 1
-    Arrow.Image = "rbxassetid://6031090390" -- Chevron Arrow standard
+    Arrow.Image = "rbxassetid://6031090390"
     Arrow.ImageColor3 = Theme.TextDark
     Arrow.Parent = HeaderBtn
 
-    -- Kontainer Opsi List
     local DropContainer = Instance.new("ScrollingFrame")
     DropContainer.Size = UDim2.new(1, -10, 1, -40)
     DropContainer.Position = UDim2.new(0, 5, 0, 38)
@@ -325,7 +564,6 @@ function Tab:AddDropdown(text, options, defaultOption, callback)
     local DropLayout = Instance.new("UIListLayout", DropContainer)
     DropLayout.Padding = UDim.new(0, 2)
 
-    -- Fungsi memuat item
     for _, opt in ipairs(options) do
         local OptBtn = Instance.new("TextButton")
         OptBtn.Size = UDim2.new(1, 0, 0, 26)
@@ -337,22 +575,15 @@ function Tab:AddDropdown(text, options, defaultOption, callback)
         OptBtn.Parent = DropContainer
         Instance.new("UICorner", OptBtn).CornerRadius = UDim.new(0, 4)
 
-        OptBtn.MouseEnter:Connect(function()
-            TweenService:Create(OptBtn, TweenInfo.new(0.15), {BackgroundColor3 = Theme.Border, TextColor3 = Theme.TextMain}):Play()
-        end)
-        OptBtn.MouseLeave:Connect(function()
-            TweenService:Create(OptBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(24, 24, 28), TextColor3 = Theme.TextDark}):Play()
-        end)
+        OptBtn.MouseEnter:Connect(function() TweenService:Create(OptBtn, TweenInfo.new(0.15), {BackgroundColor3 = Theme.Border, TextColor3 = Theme.TextMain}):Play() end)
+        OptBtn.MouseLeave:Connect(function() TweenService:Create(OptBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(24, 24, 28), TextColor3 = Theme.TextDark}):Play() end)
 
         OptBtn.MouseButton1Click:Connect(function()
             selected = opt
             SelectedText.Text = selected
-            
-            -- Tutup Dropdown setelah klik
             isDropped = false
             TweenService:Create(DropdownFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quart), {Size = UDim2.new(1, 0, 0, 36)}):Play()
             TweenService:Create(Arrow, TweenInfo.new(0.2), {Rotation = 0}):Play()
-            
             if callback then callback(selected) end
         end)
     end
@@ -361,20 +592,14 @@ function Tab:AddDropdown(text, options, defaultOption, callback)
         DropContainer.CanvasSize = UDim2.new(0, 0, 0, DropLayout.AbsoluteContentSize.Y)
     end)
 
-    -- Klik buka/tutup menu
     HeaderBtn.MouseButton1Click:Connect(function()
         isDropped = not isDropped
-        local totalItemsHeight = math.min(#options * 28, 120) -- Max tinggi dropdown 120px
-        local targetHeight = isDropped and (38 + totalItemsHeight) or 36
-        
+        local targetHeight = isDropped and (38 + math.min(#options * 28, 120)) or 36
         TweenService:Create(DropdownFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quart), {Size = UDim2.new(1, 0, 0, targetHeight)}):Play()
         TweenService:Create(Arrow, TweenInfo.new(0.2), {Rotation = isDropped and 180 or 0}):Play()
     end)
 end
 
--- ==========================================
--- 4. KOMPONEN: TOGGLE 
--- ==========================================
 function Tab:AddToggle(text, defaultState, callback)
     local state = defaultState or false
     local ToggleFrame = Instance.new("Frame")
@@ -418,9 +643,6 @@ function Tab:AddToggle(text, defaultState, callback)
     end)
 end
 
--- ==========================================
--- 5. KOMPONEN: BUTTON
--- ==========================================
 function Tab:AddButton(text, callback)
     local ButtonFrame = Instance.new("TextButton")
     ButtonFrame.Size = UDim2.new(1, 0, 0, 34)
