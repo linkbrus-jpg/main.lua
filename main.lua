@@ -554,7 +554,7 @@ local function startAutoPathing()
                     local jumpHeight = math.clamp(distance * 0.45, 12, 45) 
                     
                     -- Durasi melayang disesuaikan secara natural dengan kecepatan 80
-                    local duration = math.max(distance / 80, 0.25)
+                    local duration = math.max(distance / 80, 0.25) * 1.5
                     
                     -- Trigger animasi lompat agar terlihat asli
                     humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
