@@ -461,6 +461,10 @@ local waypoints = {
     {pos = Vector3.new(-3348.4, 1281.6, -4276.8), action = "Run"},
     {pos = Vector3.new(-3315.0, 1281.6, -4208.2), action = "Run"},
     {pos = Vector3.new(-3045.0, 1282.0, -3940.3), action = "Run"},
+    {pos = Vector3.new(-2880.2, 1288.3, -3901.9), action = "Run"},
+    {pos = Vector3.new(-2726.0, 1341.5, -3805.3), action = "Run"},
+    {pos = Vector3.new(-2648.8, 1358.6, -3772.3), action = "Run"},
+    {pos = Vector3.new(-2581.5, 1354.0, -3764.7), action = "Run"},
 }
 
 local function applyStats(humanoid)
