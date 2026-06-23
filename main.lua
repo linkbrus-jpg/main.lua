@@ -219,6 +219,16 @@ local waypoints = {
     {pos = Vector3.new(-2261.2, 745.4, -3265.8), action = "Run"},
     {pos = Vector3.new(-2239.4, 745.4, -3286.9), action = "Run"},
     {pos = Vector3.new(-2197.7, 777.2, -3244.5), action = "Run"},
+    {pos = Vector3.new(-1926.7, 777.8, -3109.5), action = "Run"},
+    {pos = Vector3.new(-1873.7, 791.2, -3107.5), action = "Run"},
+    {pos = Vector3.new(-1838.6, 804.2, -3127.3), action = "Jump"},
+    {pos = Vector3.new(-1821.2, 809.2, -3140.1), action = "Run"},
+    {pos = Vector3.new(-1810.1, 808.6, -3121.5), action = "Run"},
+    {pos = Vector3.new(-1801.5, 810.8, -3126.0), action = "Run"},
+    {pos = Vector3.new(-1700.2, 834.6, -3124.1), action = "Run"},
+    {pos = Vector3.new(-1690.2, 837.1, -3130.2), action = "Run"},
+    {pos = Vector3.new(-1680.5, 840.4, -3111.0), action = "Run"},
+    {pos = Vector3.new(-1666.4, 844.1, -3119.3), action = "Run"},
 
 }
 
