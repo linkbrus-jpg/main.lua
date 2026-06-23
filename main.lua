@@ -1,809 +1,409 @@
-local UILibrary = {}
-UILibrary.__index = UILibrary
-
-local Tab = {}
-Tab.__index = Tab
-
--- Servis Roblox
-local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
--- Kumpulan Warna Premium (Theme Palette)
-local Theme = {
-    Background = Color3.fromRGB(11, 11, 12),
-    Sidebar = Color3.fromRGB(16, 16, 18),
-    Element = Color3.fromRGB(20, 20, 23),
-    Accent = Color3.fromRGB(239, 45, 66), -- Merah Neon Premium
-    Border = Color3.fromRGB(32, 32, 36),
-    TextMain = Color3.fromRGB(245, 245, 245),
-    TextDark = Color3.fromRGB(140, 140, 145)
+-- Konfigurasi Statis (Kecepatan dikunci ke 80)
+local walkSpeedValue = 60
+local isAutoRunning = false
+
+-- ==========================================
+-- 1. KONFIGURASI KOORDINAT
+-- ==========================================
+local waypoints = {
+    {pos = Vector3.new(349.4, 56.2, -1418.3), action = "Jump"},
+    {pos = Vector3.new(340.5, 56.2, -1439.5), action = "Jump"},
+    {pos = Vector3.new(326.3, 56.2, -1463.6), action = "Jump"},
+    {pos = Vector3.new(304.3, 53.2, -1482.7), action = "Jump"},
+    {pos = Vector3.new(306.0, 54.9, -1516.4), action = "Jump"}, 
+    {pos = Vector3.new(288.1, 56.2, -1540.4), action = "Jump"}, 
+    {pos = Vector3.new(267.2, 56.2, -1554.8), action = "Jump"},
+    {pos = Vector3.new(251.1, 56.2, -1581.0), action = "Jump"},
+    {pos = Vector3.new(233.7, 54.5, -1604.1), action = "Jump"},
+    {pos = Vector3.new(217.4, 56.2, -1631.5), action = "Jump"},
+    {pos = Vector3.new(202.8, 55.7, -1657.7), action = "Jump"},
+    {pos = Vector3.new(199.0, 61.5, -1663.6), action = "Jump"},
+    {pos = Vector3.new(171.9, 56.2, -1702.1), action = "Jump"},
+    {pos = Vector3.new(156.4, 56.2, -1724.9), action = "Jump"},
+    {pos = Vector3.new(141.1, 56.2, -1749.6), action = "Jump"},
+    {pos = Vector3.new(127.3, 56.2, -1772.1), action = "Run"},
+    {pos = Vector3.new(14.5, 53.4, -1941.1), action = "Jump"},
+    {pos = Vector3.new(6.6, 58.4, -1969.0), action = "Jump"},
+    {pos = Vector3.new(-20.5, 60.1, -1971.1), action = "Jump"},
+    {pos = Vector3.new(-16.1, 58.6, -2001.4), action = "Jump"},
+    {pos = Vector3.new(-43.7, 60.2, -2003.5), action = "Jump"},
+    {pos = Vector3.new(-40.6, 58.6, -2035.7), action = "Jump"},
+    {pos = Vector3.new(-69.3, 60.5, -2038.9), action = "Jump"},
+    {pos = Vector3.new(-62.8, 60.6, -2070.4), action = "Jump"},
+    {pos = Vector3.new(-92.3, 60.0, -2072.3), action = "Jump"},
+    {pos = Vector3.new(-87.4, 59.7, -2103.4), action = "Jump"},
+    {pos = Vector3.new(-115.9, 60.3, -2105.0), action = "Jump"},
+    {pos = Vector3.new(-110.5, 59.1, -2135.1), action = "Jump"},
+    {pos = Vector3.new(-138.9, 59.3, -2139.1), action = "Jump"},
+    {pos = Vector3.new(-132.6, 60.1, -2167.9), action = "Jump"},
+    {pos = Vector3.new(-163.6, 59.7, -2173.1), action = "Jump"},
+    {pos = Vector3.new(-159.7, 58.7, -2203.5), action = "Jump"},
+    {pos = Vector3.new(-180.3, 53.4, -2213.2), action = "Run"},
+    {pos = Vector3.new(-237.8, 54.8, -2352.4), action = "Run"},
+    {pos = Vector3.new(-240.3, 53.9, -2496.8), action = "Jump"},
+    {pos = Vector3.new(-240.3, 55.0, -2520.0), action = "Jump"},
+    {pos = Vector3.new(-240.3, 57.6, -2541.5), action = "Jump"},
+    {pos = Vector3.new(-240.3, 59.0, -2563.0), action = "Jump"},
+    {pos = Vector3.new(-240.2, 62.4, -2579.8), action = "Jump"},
+    {pos = Vector3.new(-240.3, 65.8, -2602.5), action = "Jump"},
+    {pos = Vector3.new(-240.4, 65.9, -2631.2), action = "Jump"},
+    {pos = Vector3.new(-239.8, 65.9, -2670.3), action = "Jump"},
+    {pos = Vector3.new(-239.9, 62.0, -2705.6), action = "Jump"},
+    {pos = Vector3.new(-239.9, 50.5, -2747.0), action = "Jump"},
+    {pos = Vector3.new(-271.9, 59.0, -2757.8), action = "Jump"},
+    {pos = Vector3.new(-268.1, 57.0, -2796.7), action = "Jump"},
+    {pos = Vector3.new(-271.2, 58.6, -2840.6), action = "Jump"},
+    {pos = Vector3.new(-298.4, 55.0, -2880.4), action = "Jump"},
+    {pos = Vector3.new(-337.5, 52.9, -2903.6), action = "Jump"},
+    {pos = Vector3.new(-366.9, 55.0, -2908.3), action = "Jump"},
+    {pos = Vector3.new(-384.2, 55.0, -2896.9), action = "Jump"},
+    {pos = Vector3.new(-410.9, 55.0, -2909.4), action = "Run"},
+    {pos = Vector3.new(-491.3, 54.0, -2918.6), action = "Run"},
+    {pos = Vector3.new(-495.5, 129.3, -2924.0), action = "Run"},
+    {pos = Vector3.new(-521.5, 130.0, -2948.0), action = "Run"},
+    {pos = Vector3.new(-493.0, 130.0, -3002.7), action = "Run"},
+    {pos = Vector3.new(-606.2, 130.0, -3043.8), action = "Run"},
+    {pos = Vector3.new(-617.0, 125.8, -3054.5), action = "Jump"},
+    {pos = Vector3.new(-636.5, 125.8, -3078.8), action = "Jump"},
+    {pos = Vector3.new(-646.9, 125.8, -3104.9), action = "Jump"},
+    {pos = Vector3.new(-650.7, 125.8, -3133.0), action = "Jump"},
+    {pos = Vector3.new(-649.6, 125.8, -3152.7), action = "Jump"},
+    {pos = Vector3.new(-646.2, 125.8, -3168.1), action = "Jump"},
+    {pos = Vector3.new(-642.8, 125.8, -3188.2), action = "Jump"},
+    {pos = Vector3.new(-641.7, 125.8, -3213.5), action = "Jump"},
+    {pos = Vector3.new(-642.7, 125.8, -3233.0), action = "Jump"},
+    {pos = Vector3.new(-641.2, 125.8, -3258.7), action = "Jump"},
+    {pos = Vector3.new(-612.9, 125.8, -3311.8), action = "Jump"},
+    {pos = Vector3.new(-573.7, 125.8, -3331.1), action = "Jump"},
+    {pos = Vector3.new(-547.2, 125.8, -3342.5), action = "Jump"},
+    {pos = Vector3.new(-527.8, 125.8, -3360.9), action = "Jump"},
+    {pos = Vector3.new(-516.9, 125.8, -3381.9), action = "Jump"},
+    {pos = Vector3.new(-511.5, 125.8, -3407.6), action = "Jump"},
+    {pos = Vector3.new(-516.1, 125.5, -3437.6), action = "Jump"},
+    {pos = Vector3.new(-536.2, 110.0, -3454.1), action = "Run"},
+    {pos = Vector3.new(-539.9, 136.2, -3576.9), action = "Run"},
+    {pos = Vector3.new(-527.5, 110.0, -3762.2), action = "Run"},
+    {pos = Vector3.new(-528.7, 152.9, -3767.7), action = "Run"},
+    {pos = Vector3.new(-528.2, 150.9, -3785.9), action = "Jump"},
+    {pos = Vector3.new(-528.0, 157.8, -3816.7), action = "Jump"},
+    {pos = Vector3.new(-528.3, 160.6, -3856.1), action = "Jump"},
+    {pos = Vector3.new(-528.4, 166.3, -3900.3), action = "Jump"},
+    {pos = Vector3.new(-527.2, 172.1, -3943.8), action = "Jump"},
+    {pos = Vector3.new(-526.7, 165.5, -3982.5), action = "Jump"},
+    {pos = Vector3.new(-529.2, 160.3, -4029.2), action = "Jump"},
+    {pos = Vector3.new(-528.2, 155.9, -4072.5), action = "Jump"},
+    {pos = Vector3.new(-527.3, 155.9, -4123.5), action = "Jump"},
+    {pos = Vector3.new(-527.7, 155.4, -4174.2), action = "Jump"},
+    {pos = Vector3.new(-527.7, 160.6, -4221.0), action = "Jump"},
+    {pos = Vector3.new(-528.0, 166.2, -4265.7), action = "Jump"},
+    {pos = Vector3.new(-526.6, 171.3, -4306.9), action = "Jump"},
+    {pos = Vector3.new(-527.8, 166.3, -4348.2), action = "Jump"},
+    {pos = Vector3.new(-528.0, 159.8, -4393.3), action = "Run"},
+    {pos = Vector3.new(-516.1, 110.2, -4676.1), action = "Jump"},
+    {pos = Vector3.new(-515.6, 110.2, -4720.9), action = "Jump"},
+    {pos = Vector3.new(-516.0, 110.2, -4785.9), action = "Jump"},
+    {pos = Vector3.new(-516.1, 110.2, -4842.6), action = "Jump"},
+    {pos = Vector3.new(-516.3, 110.2, -4897.9), action = "Jump"},
+    {pos = Vector3.new(-517.5, 110.2, -4955.8), action = "Jump"},
+    {pos = Vector3.new(-518.1, 110.2, -5004.3), action = "Jump"},
+    {pos = Vector3.new(-517.9, 110.2, -5055.2), action = "Jump"},
+    {pos = Vector3.new(-517.8, 110.2, -5107.7), action = "Jump"},
+    {pos = Vector3.new(-518.6, 110.0, -5159.0), action = "Run"},
+    {pos = Vector3.new(-639.2, 110.0, -5272.7), action = "Jump"},
+    {pos = Vector3.new(-664.1, 112.6, -5264.8), action = "Jump"},
+    {pos = Vector3.new(-691.3, 116.2, -5259.4), action = "Jump"},
+    {pos = Vector3.new(-718.2, 119.1, -5253.2), action = "Jump"},
+    {pos = Vector3.new(-732.2, 120.6, -5229.8), action = "Jump"},
+    {pos = Vector3.new(-759.3, 122.7, -5224.6), action = "Jump"},
+    {pos = Vector3.new(-793.1, 126.6, -5238.8), action = "Jump"},
+    {pos = Vector3.new(-811.4, 128.9, -5213.4), action = "Jump"},
+    {pos = Vector3.new(-836.2, 129.0, -5208.7), action = "Jump"},
+    {pos = Vector3.new(-869.3, 131.9, -5222.2), action = "Jump"},
+    {pos = Vector3.new(-885.9, 131.4, -5198.5), action = "Jump"},
+    {pos = Vector3.new(-914.0, 132.2, -5194.7), action = "Jump"},
+    {pos = Vector3.new(-937.4, 132.4, -5207.3), action = "Jump"},
+    {pos = Vector3.new(-974.5, 137.0, -5200.9), action = "Jump"},
+    {pos = Vector3.new(-998.5, 138.2, -5196.1), action = "Jump"},
+    {pos = Vector3.new(-1035.1, 140.4, -5196.7), action = "Jump"},
+    {pos = Vector3.new(-1066.4, 140.8, -5182.6), action = "Jump"},
+    {pos = Vector3.new(-1094.2, 143.3, -5178.1), action = "Jump"},
+    {pos = Vector3.new(-1122.0, 144.5, -5177.9), action = "Jump"},
+    {pos = Vector3.new(-1143.1, 144.5, -5163.2), action = "Jump"},
+    {pos = Vector3.new(-1175.0, 147.6, -5168.7), action = "Jump"},
+    {pos = Vector3.new(-1195.4, 148.8, -5164.2), action = "Run"},
+    {pos = Vector3.new(-1396.4, 150.3, -5043.1), action = "Jump"},
+    {pos = Vector3.new(-1413.9, 153.3, -5034.3), action = "Jump"},
+    {pos = Vector3.new(-1435.1, 156.4, -5023.5), action = "Jump"},
+    {pos = Vector3.new(-1463.4, 159.0, -5019.1), action = "Jump"},
+    {pos = Vector3.new(-1475.8, 162.1, -5002.5), action = "Jump"},
+    {pos = Vector3.new(-1496.7, 165.2, -4992.3), action = "Jump"},
+    {pos = Vector3.new(-1519.2, 168.9, -4986.2), action = "Jump"},
+    {pos = Vector3.new(-1542.3, 172.3, -4986.8), action = "Jump"},
+    {pos = Vector3.new(-1566.2, 176.1, -4981.5), action = "Jump"},
+    {pos = Vector3.new(-1591.7, 180.3, -4989.6), action = "Jump"},
+    {pos = Vector3.new(-1611.7, 184.2, -5000.5), action = "Jump"},
+    {pos = Vector3.new(-1630.7, 188.4, -4988.8), action = "Jump"},
+    {pos = Vector3.new(-1653.4, 192.3, -4983.8), action = "Jump"},
+    {pos = Vector3.new(-1676.6, 196.4, -4984.9), action = "Run"},
+    {pos = Vector3.new(-1891.2, 196.5, -4958.6), action = "Jump"},
+    {pos = Vector3.new(-1911.6, 196.6, -4951.4), action = "Jump"},
+    {pos = Vector3.new(-1933.6, 200.0, -4939.8), action = "Jump"},
+    {pos = Vector3.new(-1955.7, 203.4, -4927.0), action = "Jump"},
+    {pos = Vector3.new(-1976.4, 206.8, -4911.2), action = "Jump"},
+    {pos = Vector3.new(-1997.1, 210.6, -4891.5), action = "Jump"},
+    {pos = Vector3.new(-2015.0, 213.5, -4877.9), action = "Jump"},
+    {pos = Vector3.new(-2033.9, 216.6, -4865.5), action = "Jump"},
+    {pos = Vector3.new(-2054.3, 219.6, -4856.1), action = "Jump"},
+    {pos = Vector3.new(-2077.2, 222.9, -4847.3), action = "Jump"},
+    {pos = Vector3.new(-2100.1, 225.8, -4843.2), action = "Jump"},
+    {pos = Vector3.new(-2124.4, 228.9, -4840.6), action = "Jump"},
+    {pos = Vector3.new(-2145.2, 231.3, -4841.1), action = "Jump"},
+    {pos = Vector3.new(-2171.3, 234.4, -4841.1), action = "Jump"},
+    {pos = Vector3.new(-2195.1, 237.2, -4841.2), action = "Jump"},
+    {pos = Vector3.new(-2219.2, 240.2, -4838.7), action = "Jump"},
+    {pos = Vector3.new(-2241.6, 243.1, -4834.1), action = "Jump"},
+    {pos = Vector3.new(-2264.1, 246.2, -4827.1), action = "Jump"},
+    {pos = Vector3.new(-2293.5, 250.6, -4813.1), action = "Run"},
+    {pos = Vector3.new(-2586.3, 251.1, -4620.9), action = "Jump"},
+    {pos = Vector3.new(-2605.0, 259.9, -4599.7), action = "Jump"},
+    {pos = Vector3.new(-2627.5, 269.0, -4573.2), action = "Jump"},
+    {pos = Vector3.new(-2629.3, 274.5, -4539.8), action = "Jump"},
+    {pos = Vector3.new(-2663.5, 280.3, -4532.9), action = "Jump"},
+    {pos = Vector3.new(-2704.3, 286.5, -4529.6), action = "Jump"},
+    {pos = Vector3.new(-2727.4, 293.8, -4503.4), action = "Jump"},
+    {pos = Vector3.new(-2747.2, 300.2, -4479.8), action = "Jump"},
+    {pos = Vector3.new(-2766.8, 306.6, -4456.5), action = "Jump"},
+    {pos = Vector3.new(-2789.3, 313.7, -4431.3), action = "Jump"},
+    {pos = Vector3.new(-2792.3, 314.0, -4389.8), action = "Run"},
+    {pos = Vector3.new(-2825.9, 314.0, -4154.1), action = "Run"},
+    {pos = Vector3.new(-2780.8, 315.4, -4064.6), action = "Run"},
+    {pos = Vector3.new(-2731.4, 315.4, -3967.2), action = "Run"},
+    {pos = Vector3.new(-2662.4, 359.8, -3829.5), action = "Run"},
+    {pos = Vector3.new(-2644.2, 360.6, -3796.2), action = "Run"},
+    {pos = Vector3.new(-2658.2, 362.0, -3641.5), action = "Jump"},
+    {pos = Vector3.new(-2648.0, 366.6, -3631.4), action = "Jump"},
+    {pos = Vector3.new(-2630.7, 372.2, -3629.7), action = "Jump"},
+    {pos = Vector3.new(-2630.6, 378.1, -3645.4), action = "Jump"},
+    {pos = Vector3.new(-2648.1, 383.9, -3645.1), action = "Jump"},
+    {pos = Vector3.new(-2646.1, 389.8, -3630.4), action = "Jump"},
+    {pos = Vector3.new(-2629.7, 395.7, -3630.6), action = "Jump"},
+    {pos = Vector3.new(-2630.7, 401.6, -3645.0), action = "Jump"},
+    {pos = Vector3.new(-2646.9, 407.5, -3646.4), action = "Jump"},
+    {pos = Vector3.new(-2646.8, 413.3, -3630.4), action = "Jump"},
+    {pos = Vector3.new(-2631.2, 419.2, -3629.3), action = "Jump"},
+    {pos = Vector3.new(-2629.7, 425.1, -3647.4), action = "Jump"},
+    {pos = Vector3.new(-2644.6, 431.0, -3647.9), action = "Jump"},
+    {pos = Vector3.new(-2647.0, 436.8, -3630.5), action = "Jump"},
+    {pos = Vector3.new(-2631.0, 442.7, -3629.4), action = "Jump"},
+    {pos = Vector3.new(-2629.4, 448.6, -3643.7), action = "Jump"},
+    {pos = Vector3.new(-2643.3, 454.5, -3648.4), action = "Jump"},
+    {pos = Vector3.new(-2646.7, 460.4, -3631.6), action = "Jump"},
+    {pos = Vector3.new(-2630.8, 466.6, -3629.8), action = "Jump"},
+    {pos = Vector3.new(-2628.6, 472.6, -3644.9), action = "Jump"},
+    {pos = Vector3.new(-2647.2, 478.4, -3643.9), action = "Jump"},
+    {pos = Vector3.new(-2645.7, 484.3, -3631.4), action = "Jump"},
+    {pos = Vector3.new(-2631.1, 490.2, -3630.4), action = "Jump"},
+    {pos = Vector3.new(-2628.8, 496.1, -3644.6), action = "Jump"},
+    {pos = Vector3.new(-2644.8, 501.9, -3646.0), action = "Jump"},
+    {pos = Vector3.new(-2644.8, 507.8, -3631.9), action = "Jump"},
+    {pos = Vector3.new(-2633.2, 507.8, -3617.2), action = "Jump"},
+
 }
 
--- ==========================================
--- FUNGSI PEMBANTU: DRAGGABLE (BISA DIGESER)
--- ==========================================
-local function makeDraggable(guiObject)
-    local dragging, dragInput, dragStart, startPos
-    
-    guiObject.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            dragStart = input.Position
-            startPos = guiObject.Position
+local function applyStats(humanoid)
+    if humanoid then
+        humanoid.WalkSpeed = walkSpeedValue
+    end
+end
+
+-- Mencari indeks koordinat terdekat berdasarkan posisi karakter saat ini
+local function getNearestWaypointIndex(character)
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    if not rootPart then return 1 end
+
+    local nearestDistance = math.huge
+    local nearestIndex = 1
+
+    for i, wp in ipairs(waypoints) do
+        local pos1 = Vector3.new(rootPart.Position.X, 0, rootPart.Position.Z)
+        local pos2 = Vector3.new(wp.pos.X, 0, wp.pos.Z)
+        local distance = (pos1 - pos2).Magnitude
+
+        if distance < nearestDistance then
+            nearestDistance = distance
+            nearestIndex = i
+        end
+    end
+    return nearestIndex
+end
+
+local function startAutoPathing()
+    while isAutoRunning do
+        local character = LocalPlayer.Character
+        
+        -- Jika karakter mati atau belum respawn penuh
+        if not character or not character:FindFirstChild("Humanoid") or character.Humanoid.Health <= 0 then
+            character = LocalPlayer.CharacterAdded:Wait()
+            character:WaitForChild("HumanoidRootPart")
+            character:WaitForChild("Humanoid")
+            task.wait(0.5)
+        end
+
+        local humanoid = character:WaitForChild("Humanoid")
+        local rootPart = character:WaitForChild("HumanoidRootPart")
+
+        applyStats(humanoid)
+        local currentIndex = getNearestWaypointIndex(character)
+
+        while isAutoRunning and currentIndex <= #waypoints do
             
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
+            -- ===============================================
+            -- SISTEM RE-CHECK JIKA TIBA-TIBA MATI
+            -- ===============================================
+            if not character or not character.Parent or humanoid.Health <= 0 then
+                -- [TIMING TUNGGU SETELAH MATI]: Menunggu 5 detik penuh setelah terdeteksi mati
+                task.wait(5) 
+                
+                -- Tunggu karakter benar-benar hidup kembali di tempat spawn baru
+                character = LocalPlayer.CharacterAdded:Wait()
+                rootPart = character:WaitForChild("HumanoidRootPart")
+                humanoid = character:WaitForChild("Humanoid")
+                task.wait(0.5) 
+                
+                -- Cari lagi koordinat paling dekat dari titik berdiri saat ini
+                currentIndex = getNearestWaypointIndex(character)
+                applyStats(humanoid)
+                continue 
+            end
+
+            local target = waypoints[currentIndex]
+            local stuckTimer = 0
+            
+            -- ===============================================
+            -- FASE 1: JALAN MENUJU KOORDINAT TARGET
+            -- ===============================================
+            while isAutoRunning and humanoid.Health > 0 do
+                local pos2D = Vector3.new(rootPart.Position.X, 0, rootPart.Position.Z)
+                local target2D = Vector3.new(target.pos.X, 0, target.pos.Z)
+                local distance = (pos2D - target2D).Magnitude
+                
+                -- Jarak toleransi di-set ke 5 karena kecepatan lari 80 sangat kencang
+                if distance <= 5 then
+                    break
                 end
-            end)
-        end
-    end)
-    
-    guiObject.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            dragInput = input
-        end
-    end)
-    
-    UserInputService.InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
-            local delta = input.Position - dragStart
-            local targetPos = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-            TweenService:Create(guiObject, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = targetPos}):Play()
-        end
-    end)
-end
 
--- ==========================================
--- SISTEM NOTIFIKASI POP-UP
--- ==========================================
-function UILibrary:Notification(title, text, duration)
-    duration = duration or 4
-    local PlayerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
-    local NotifGui = PlayerGui:FindFirstChild("PremiumUILibrary_Notif")
-    
-    if not NotifGui then
-        NotifGui = Instance.new("ScreenGui")
-        NotifGui.Name = "PremiumUILibrary_Notif"
-        NotifGui.ResetOnSpawn = false
-        NotifGui.Parent = PlayerGui
-        
-        local Holder = Instance.new("Frame")
-        Holder.Name = "Holder"
-        Holder.Size = UDim2.new(0, 280, 1, -40)
-        Holder.Position = UDim2.new(1, -290, 0, 20)
-        Holder.BackgroundTransparency = 1
-        Holder.Parent = NotifGui
-        
-        local Layout = Instance.new("UIListLayout", Holder)
-        Layout.VerticalAlignment = Enum.VerticalAlignment.Bottom
-        Layout.SortOrder = Enum.SortOrder.LayoutOrder
-        Layout.Padding = UDim.new(0, 8)
+                humanoid:MoveTo(target.pos)
+                task.wait(0.02)
+                stuckTimer = stuckTimer + 0.02
+
+                if stuckTimer > 3 then
+                    humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                    humanoid.Jump = true
+                    stuckTimer = 0
+                end
+            end
+
+            if humanoid.Health <= 0 or not isAutoRunning then continue end
+
+            -- ===============================================
+            -- FASE 2: LOMPAT PARABOLA PRESISI (ANTI-FALL / ANTI-MISSED)
+            -- ===============================================
+            if target.action == "Jump" then
+                local nextTarget = waypoints[currentIndex + 1]
+                
+                if nextTarget then
+                    local startPos = rootPart.Position
+                    local endPos = nextTarget.pos
+                    
+                    -- Hitung jarak asli horizontal antar koordinat
+                    local distance = (Vector3.new(startPos.X, 0, startPos.Z) - Vector3.new(endPos.X, 0, endPos.Z)).Magnitude
+                    
+                    -- DETEKSI JARAK: Jarak sempit = lompat sedikit, jarak jauh = lompat agak banyak
+                    local jumpHeight = math.clamp(distance * 0.45, 12, 45) 
+                    
+                    -- Durasi melayang disesuaikan secara natural dengan kecepatan 80
+                    local duration = math.max(distance / 80, 0.25)
+                    
+                    -- Trigger animasi lompat agar terlihat asli
+                    humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                    
+                    -- Sistem gerak lengkungan (arc) parabola agar mendarat PAS di koordinat depannya
+                    local t = 0
+                    while t < 1 and humanoid.Health > 0 and isAutoRunning do
+                        local dt = task.wait(0.01)
+                        t = t + (dt / duration)
+                        if t > 1 then t = 1 end
+                        
+                        -- Interpolasi posisi horizontal (X dan Z) & kalkulasi tinggi kurva (Y)
+                        local currentXZ = startPos:Lerp(endPos, t)
+                        local heightOffset = 4 * jumpHeight * t * (1 - t)
+                        local currentY = startPos.Y + (endPos.Y - startPos.Y) * t + heightOffset
+                        
+                        -- Mengunci posisi dan arah hadap karakter ke koordinat depan selama melompat
+                        rootPart.CFrame = CFrame.lookAt(
+                            Vector3.new(currentXZ.X, currentY, currentXZ.Z), 
+                            Vector3.new(endPos.X, currentY, endPos.Z)
+                        )
+                    end
+                    
+                    -- Mengunci posisi akhir mutlak di koordinat target pendaratan
+                    if humanoid.Health > 0 then
+                        rootPart.CFrame = CFrame.new(endPos)
+                    end
+                    task.wait(0.05)
+                end
+            end
+
+            -- Index koordinat bertambah setelah sukses mendarat dengan selamat
+            currentIndex = currentIndex + 1
+        end
+
+        task.wait(0.1)
     end
-    
-    local Holder = NotifGui.Holder
-    
-    -- Base Frame transparan untuk menjaga layout posisi tetap aman saat animasi
-    local BaseFrame = Instance.new("Frame")
-    BaseFrame.Size = UDim2.new(1, 0, 0, 65)
-    BaseFrame.BackgroundTransparency = 1
-    BaseFrame.Parent = Holder
-    
-    local NotifFrame = Instance.new("Frame")
-    NotifFrame.Size = UDim2.new(1, 0, 1, 0)
-    NotifFrame.Position = UDim2.new(1.3, 0, 0, 0) -- Mulai dari luar layar sebelah kanan
-    NotifFrame.BackgroundColor3 = Theme.Sidebar
-    NotifFrame.Parent = BaseFrame
-    
-    Instance.new("UICorner", NotifFrame).CornerRadius = UDim.new(0, 6)
-    local Stroke = Instance.new("UIStroke", NotifFrame)
-    Stroke.Color = Theme.Border
-    
-    -- Garis Aksen Kiri (Neon)
-    local AccentBar = Instance.new("Frame")
-    AccentBar.Size = UDim2.new(0, 4, 1, 0)
-    AccentBar.BackgroundColor3 = Theme.Accent
-    AccentBar.Parent = NotifFrame
-    Instance.new("UICorner", AccentBar).CornerRadius = UDim.new(0, 6)
-    
-    local TitleLabel = Instance.new("TextLabel")
-    TitleLabel.Size = UDim2.new(1, -24, 0, 20)
-    TitleLabel.Position = UDim2.new(0, 14, 0, 6)
-    TitleLabel.BackgroundTransparency = 1
-    TitleLabel.Text = title or "Notification"
-    TitleLabel.TextColor3 = Theme.TextMain
-    TitleLabel.Font = Enum.Font.GothamBold
-    TitleLabel.TextSize = 12
-    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    TitleLabel.Parent = NotifFrame
-    
-    local TextLabel = Instance.new("TextLabel")
-    TextLabel.Size = UDim2.new(1, -24, 1, -30)
-    TextLabel.Position = UDim2.new(0, 14, 0, 26)
-    TextLabel.BackgroundTransparency = 1
-    TextLabel.Text = text or ""
-    TextLabel.TextColor3 = Theme.TextDark
-    TextLabel.Font = Enum.Font.Gotham
-    TextLabel.TextSize = 11
-    TextLabel.TextXAlignment = Enum.TextXAlignment.Left
-    TextLabel.TextYAlignment = Enum.TextYAlignment.Top
-    TextLabel.TextWrapped = true
-    TextLabel.Parent = NotifFrame
-    
-    -- Animasi Masuk (Slide In)
-    TweenService:Create(NotifFrame, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.new(0, 0, 0, 0)}):Play()
-    
-    -- Animasi Keluar dan Hancurkan
-    task.delay(duration, function()
-        local tweenOut = TweenService:Create(NotifFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(1.3, 0, 0, 0)})
-        TweenService:Create(Stroke, TweenInfo.new(0.2), {Transparency = 1}):Play()
-        TweenService:Create(AccentBar, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
-        TweenService:Create(TitleLabel, TweenInfo.new(0.2), {TextTransparency = 1}):Play()
-        TweenService:Create(TextLabel, TweenInfo.new(0.2), {TextTransparency = 1}):Play()
-        
-        tweenOut:Play()
-        tweenOut.Completed:Connect(function()
-            BaseFrame:Destroy()
-        end)
-    end)
 end
 
 -- ==========================================
--- 1. UTAMA: MEMBUAT WINDOW (JENDELA UTAMA)
+-- 3. INTERFACE WINDUI (BERSIH DARI SLIDER)
 -- ==========================================
-function UILibrary.CreateWindow(config)
-    local Window = setmetatable({}, UILibrary)
-    Window.Tabs = {}
-    
-    local titleText = config.Title or "Custom Hub"
-    local logoId = config.Logo or "rbxassetid://0"
-    
-    local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "PremiumUILibrary"
-    ScreenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
-    ScreenGui.ResetOnSpawn = false
-    Window.ScreenGui = ScreenGui
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
-    -- LOGO OPEN
-    local OpenButton = Instance.new("ImageButton")
-    OpenButton.Size = UDim2.new(0, 40, 0, 40)
-    OpenButton.Position = UDim2.new(0.05, 0, 0.05, 0)
-    OpenButton.Image = logoId
-    OpenButton.BackgroundColor3 = Theme.Sidebar
-    OpenButton.Visible = false
-    OpenButton.Parent = ScreenGui
-    Instance.new("UICorner", OpenButton).CornerRadius = UDim.new(0, 8)
-    local OpenStroke = Instance.new("UIStroke", OpenButton)
-    OpenStroke.Color = Theme.Border
-    makeDraggable(OpenButton)
+local Window = WindUI:CreateWindow({
+    Title = "My Super Hub",
+    Icon = "door-open",
+    Author = "by .ftgs and .ftgs", 
+})
 
-    OpenButton.MouseEnter:Connect(function() TweenService:Create(OpenStroke, TweenInfo.new(0.2), {Color = Theme.Accent}):Play() end)
-    OpenButton.MouseLeave:Connect(function() TweenService:Create(OpenStroke, TweenInfo.new(0.2), {Color = Theme.Border}):Play() end)
+local Tab = Window:Tab({
+    Title = "Auto Farm",
+    Icon = "bird",
+    Locked = false,
+})
 
-    -- MAIN FRAME
-    local MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(0, 500, 0, 320)
-    MainFrame.Position = UDim2.new(0.5, -250, 0.5, -160)
-    MainFrame.BackgroundColor3 = Theme.Background
-    MainFrame.Parent = ScreenGui
-    Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
-    Instance.new("UIStroke", MainFrame).Color = Theme.Border
-    makeDraggable(MainFrame)
+local autoPathThread = nil
 
-    -- TOPBAR
-    local Topbar = Instance.new("Frame")
-    Topbar.Size = UDim2.new(1, 0, 0, 38)
-    Topbar.BackgroundTransparency = 1
-    Topbar.Parent = MainFrame
-
-    local TitleLabel = Instance.new("TextLabel")
-    TitleLabel.Size = UDim2.new(0.7, 0, 1, 0)
-    TitleLabel.Position = UDim2.new(0, 14, 0, 0)
-    TitleLabel.BackgroundTransparency = 1
-    TitleLabel.Text = titleText
-    TitleLabel.TextColor3 = Theme.TextMain
-    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    TitleLabel.Font = Enum.Font.GothamBold
-    TitleLabel.TextSize = 14
-    TitleLabel.Parent = Topbar
-
-    -- CLOSE BUTTON
-    local CloseButton = Instance.new("TextButton")
-    CloseButton.Size = UDim2.new(0, 20, 0, 20)
-    CloseButton.Position = UDim2.new(1, -28, 0.5, -10)
-    CloseButton.BackgroundColor3 = Color3.fromRGB(24, 24, 27)
-    CloseButton.Text = "×"
-    CloseButton.TextColor3 = Theme.TextDark
-    CloseButton.TextSize = 16
-    CloseButton.Font = Enum.Font.GothamBold
-    CloseButton.Parent = Topbar
-    Instance.new("UICorner", CloseButton).CornerRadius = UDim.new(1, 0)
-    Instance.new("UIStroke", CloseButton).Color = Theme.Border
-
-    CloseButton.MouseEnter:Connect(function() TweenService:Create(CloseButton, TweenInfo.new(0.2), {BackgroundColor3 = Theme.Accent, TextColor3 = Color3.fromRGB(255, 255, 255)}):Play() end)
-    CloseButton.MouseLeave:Connect(function() TweenService:Create(CloseButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(24, 24, 27), TextColor3 = Theme.TextDark}):Play() end)
-
-    -- SIDEBAR
-    local SidebarBg = Instance.new("Frame")
-    SidebarBg.Size = UDim2.new(0, 130, 1, -48)
-    SidebarBg.Position = UDim2.new(0, 10, 0, 38)
-    SidebarBg.BackgroundColor3 = Theme.Sidebar
-    SidebarBg.Parent = MainFrame
-    Instance.new("UICorner", SidebarBg).CornerRadius = UDim.new(0, 6)
-    Instance.new("UIStroke", SidebarBg).Color = Theme.Border
-
-    local Sidebar = Instance.new("ScrollingFrame")
-    Sidebar.Size = UDim2.new(1, -10, 1, -10)
-    Sidebar.Position = UDim2.new(0, 5, 0, 5)
-    Sidebar.BackgroundTransparency = 1
-    Sidebar.ScrollBarThickness = 0
-    Sidebar.Parent = SidebarBg
-    local SidebarLayout = Instance.new("UIListLayout", Sidebar)
-    SidebarLayout.Padding = UDim.new(0, 4)
-
-    -- CONTAINER HOLDER
-    local ContainerHolder = Instance.new("Frame")
-    ContainerHolder.Size = UDim2.new(1, -160, 1, -48)
-    ContainerHolder.Position = UDim2.new(0, 150, 0, 38)
-    ContainerHolder.BackgroundTransparency = 1
-    ContainerHolder.Parent = MainFrame
-
-    CloseButton.MouseButton1Click:Connect(function()
-        MainFrame.Visible = false
-        OpenButton.Visible = true
-    end)
-    OpenButton.MouseButton1Click:Connect(function()
-        MainFrame.Visible = true
-        OpenButton.Visible = false
-    end)
-
-    Window.Sidebar = Sidebar
-    Window.ContainerHolder = ContainerHolder
-    return Window
-end
-
--- ==========================================
--- 2. SISTEM TAB 
--- ==========================================
-function UILibrary:CreateTab(name, iconId)
-    local currentWindow = self
-    local TabObj = setmetatable({}, Tab)
-    
-    local TabButton = Instance.new("TextButton")
-    TabButton.Size = UDim2.new(1, 0, 0, 28)
-    TabButton.BackgroundColor3 = Theme.Element
-    TabButton.BackgroundTransparency = 1
-    TabButton.Text = name
-    TabButton.TextColor3 = Theme.TextDark
-    TabButton.Font = Enum.Font.GothamMedium
-    TabButton.TextSize = 12
-    TabButton.TextXAlignment = Enum.TextXAlignment.Left
-    TabButton.Parent = currentWindow.Sidebar
-    Instance.new("UICorner", TabButton).CornerRadius = UDim.new(0, 5)
-    local TabStroke = Instance.new("UIStroke", TabButton)
-    TabStroke.Color = Theme.Border
-    TabStroke.Transparency = 1
-
-    local Padding = Instance.new("UIPadding", TabButton)
-    Padding.PaddingLeft = UDim.new(0, iconId and 28 or 10)
-
-    local TabIcon
-    if iconId then
-        TabIcon = Instance.new("ImageLabel")
-        TabIcon.Size = UDim2.new(0, 14, 0, 14)
-        TabIcon.Position = UDim2.new(0, -20, 0.5, -7)
-        TabIcon.BackgroundTransparency = 1
-        TabIcon.Image = iconId
-        TabIcon.ImageColor3 = Theme.TextDark
-        TabIcon.Parent = TabButton
-    end
-
-    local TabPage = Instance.new("ScrollingFrame")
-    TabPage.Size = UDim2.new(1, 0, 1, 0)
-    TabPage.BackgroundTransparency = 1
-    TabPage.Visible = false
-    TabPage.ScrollBarThickness = 2
-    TabPage.ScrollBarImageColor3 = Theme.Border
-    TabPage.Parent = currentWindow.ContainerHolder
-
-    local PageLayout = Instance.new("UIListLayout", TabPage)
-    PageLayout.Padding = UDim.new(0, 5)
-    Instance.new("UIPadding", TabPage).PaddingRight = UDim.new(0, 5)
-    
-    PageLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        TabPage.CanvasSize = UDim2.new(0, 0, 0, PageLayout.AbsoluteContentSize.Y + 5)
-    end)
-
-    local function activateTab()
-        for _, v in pairs(currentWindow.ContainerHolder:GetChildren()) do
-            if v:IsA("ScrollingFrame") then v.Visible = false end
-        end
-        for _, v in pairs(currentWindow.Sidebar:GetChildren()) do
-            if v:IsA("TextButton") then 
-                TweenService:Create(v, TweenInfo.new(0.15), {TextColor3 = Theme.TextDark, BackgroundTransparency = 1}):Play()
-                v.UIStroke.Transparency = 1
-                if v:FindFirstChild("ImageLabel") then TweenService:Create(v.ImageLabel, TweenInfo.new(0.15), {ImageColor3 = Theme.TextDark}):Play() end
+Tab:Toggle({
+    Title = "Auto Path (Locked Speed 80)",
+    Desc = "Lari otomatis & Sistem Lompat Presisi Parabola.",
+    Icon = "footprints",
+    Type = "Checkbox",
+    Value = false, 
+    Callback = function(state) 
+        isAutoRunning = state
+        if isAutoRunning then
+            if autoPathThread then task.cancel(autoPathThread) end
+            autoPathThread = task.spawn(startAutoPathing)
+        else
+            if autoPathThread then 
+                task.cancel(autoPathThread) 
+                autoPathThread = nil
+            end
+            local char = LocalPlayer.Character
+            if char and char:FindFirstChild("Humanoid") then
+                char.Humanoid:MoveTo(char.HumanoidRootPart.Position)
             end
         end
-        TabPage.Visible = true
-        TweenService:Create(TabButton, TweenInfo.new(0.15), {TextColor3 = Theme.TextMain, BackgroundTransparency = 0}):Play()
-        TabStroke.Transparency = 0
-        if TabIcon then TweenService:Create(TabIcon, TweenInfo.new(0.15), {ImageColor3 = Theme.Accent}):Play() end
     end
-
-    TabButton.MouseButton1Click:Connect(activateTab)
-    if #currentWindow.Sidebar:GetChildren() == 2 then activateTab() end
-
-    TabObj.Page = TabPage
-    return TabObj
-end
-
--- ==========================================
--- 3. KOMPONEN: STATION (CONTAINER WRAPPER) & SECTION
--- ==========================================
-function Tab:AddStation(title)
-    local StationFrame = Instance.new("Frame")
-    StationFrame.Size = UDim2.new(1, 0, 0, 0)
-    StationFrame.AutomaticSize = Enum.AutomaticSize.Y
-    StationFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 17) -- Kontras warna sedikit lebih terang dari bg utama
-    StationFrame.Parent = self.Page
-    Instance.new("UICorner", StationFrame).CornerRadius = UDim.new(0, 6)
-    local StationStroke = Instance.new("UIStroke", StationFrame)
-    StationStroke.Color = Theme.Border
-
-    local StationLayout = Instance.new("UIListLayout", StationFrame)
-    StationLayout.Padding = UDim.new(0, 5)
-    StationLayout.SortOrder = Enum.SortOrder.LayoutOrder
-
-    local StationPadding = Instance.new("UIPadding", StationFrame)
-    StationPadding.PaddingTop = UDim.new(0, 8)
-    StationPadding.PaddingBottom = UDim.new(0, 8)
-    StationPadding.PaddingLeft = UDim.new(0, 8)
-    StationPadding.PaddingRight = UDim.new(0, 8)
-
-    if title then
-        local TitleLabel = Instance.new("TextLabel")
-        TitleLabel.Size = UDim2.new(1, 0, 0, 18)
-        TitleLabel.BackgroundTransparency = 1
-        TitleLabel.Text = title:upper()
-        TitleLabel.TextColor3 = Theme.Accent
-        TitleLabel.Font = Enum.Font.GothamBold
-        TitleLabel.TextSize = 10
-        TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-        TitleLabel.Parent = StationFrame
-    end
-
-    -- Inject metatable redirection agar Station bertingkah seperti Tab (mendukung semua komponen di bawah)
-    local StationObj = setmetatable({}, { __index = self })
-    StationObj.Page = StationFrame -- Mengalihkan tujuan pembuatan objek ke dalam frame Station ini
-    
-    return StationObj
-end
-
-function Tab:AddSection(text)
-    local SectionFrame = Instance.new("Frame")
-    SectionFrame.Size = UDim2.new(1, 0, 0, 24)
-    SectionFrame.BackgroundTransparency = 1
-    SectionFrame.Parent = self.Page
-
-    local Label = Instance.new("TextLabel")
-    Label.Size = UDim2.new(1, -5, 1, 0)
-    Label.Position = UDim2.new(0, 5, 0, 0)
-    Label.BackgroundTransparency = 1
-    Label.Text = text
-    Label.TextColor3 = Theme.Accent
-    Label.TextXAlignment = Enum.TextXAlignment.Left
-    Label.Font = Enum.Font.GothamBold
-    Label.TextSize = 13
-    Label.Parent = SectionFrame
-end
-
-function Tab:AddParagraph(title, text)
-    local ParaFrame = Instance.new("Frame")
-    ParaFrame.Size = UDim2.new(1, 0, 0, 58)
-    ParaFrame.BackgroundColor3 = Theme.Element
-    ParaFrame.Parent = self.Page
-    Instance.new("UICorner", ParaFrame).CornerRadius = UDim.new(0, 6)
-    Instance.new("UIStroke", ParaFrame).Color = Theme.Border
-
-    local TitleLabel = Instance.new("TextLabel")
-    TitleLabel.Size = UDim2.new(1, -24, 0, 20)
-    TitleLabel.Position = UDim2.new(0, 12, 0, 6)
-    TitleLabel.BackgroundTransparency = 1
-    TitleLabel.Text = title
-    TitleLabel.TextColor3 = Theme.TextMain
-    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    TitleLabel.Font = Enum.Font.GothamMedium
-    TitleLabel.TextSize = 12
-    TitleLabel.Parent = ParaFrame
-
-    local TextLabel = Instance.new("TextLabel")
-    TextLabel.Size = UDim2.new(1, -24, 1, -30)
-    TextLabel.Position = UDim2.new(0, 12, 0, 26)
-    TextLabel.BackgroundTransparency = 1
-    TextLabel.Text = text
-    TextLabel.TextColor3 = Theme.TextDark
-    TextLabel.TextXAlignment = Enum.TextXAlignment.Left
-    TextLabel.TextYAlignment = Enum.TextYAlignment.Top
-    TextLabel.Font = Enum.Font.Gotham
-    TextLabel.TextSize = 11
-    TextLabel.TextWrapped = true
-    TextLabel.Parent = ParaFrame
-end
-
--- ==========================================
--- 4. KOMPONEN: INPUT (TextBox)
--- ==========================================
-function Tab:AddInput(text, placeholder, callback)
-    local InputFrame = Instance.new("Frame")
-    InputFrame.Size = UDim2.new(1, 0, 0, 36)
-    InputFrame.BackgroundColor3 = Theme.Element
-    InputFrame.Parent = self.Page
-    Instance.new("UICorner", InputFrame).CornerRadius = UDim.new(0, 6)
-    Instance.new("UIStroke", InputFrame).Color = Theme.Border
-
-    local Label = Instance.new("TextLabel")
-    Label.Size = UDim2.new(0.5, 0, 1, 0)
-    Label.Position = UDim2.new(0, 12, 0, 0)
-    Label.BackgroundTransparency = 1
-    Label.Text = text
-    Label.TextColor3 = Theme.TextMain
-    Label.TextXAlignment = Enum.TextXAlignment.Left
-    Label.Font = Enum.Font.GothamMedium
-    Label.TextSize = 12
-    Label.Parent = InputFrame
-
-    local TextBoxBg = Instance.new("Frame")
-    TextBoxBg.Size = UDim2.new(0.4, 0, 0, 24)
-    TextBoxBg.Position = UDim2.new(0.6, -12, 0.5, -12)
-    TextBoxBg.BackgroundColor3 = Color3.fromRGB(15, 15, 17)
-    TextBoxBg.Parent = InputFrame
-    Instance.new("UICorner", TextBoxBg).CornerRadius = UDim.new(0, 4)
-    local BoxStroke = Instance.new("UIStroke", TextBoxBg)
-    BoxStroke.Color = Theme.Border
-
-    local TextBox = Instance.new("TextBox")
-    TextBox.Size = UDim2.new(1, -10, 1, 0)
-    TextBox.Position = UDim2.new(0, 5, 0, 0)
-    TextBox.BackgroundTransparency = 1
-    TextBox.Text = ""
-    TextBox.PlaceholderText = placeholder or "Tulis disini..."
-    TextBox.TextColor3 = Theme.TextMain
-    TextBox.PlaceholderColor3 = Theme.TextDark
-    TextBox.Font = Enum.Font.Gotham
-    TextBox.TextSize = 11
-    TextBox.TextXAlignment = Enum.TextXAlignment.Left
-    TextBox.ClearTextOnFocus = false
-    TextBox.Parent = TextBoxBg
-
-    TextBox.Focused:Connect(function() TweenService:Create(BoxStroke, TweenInfo.new(0.2), {Color = Theme.Accent}):Play() end)
-    TextBox.FocusLost:Connect(function()
-        TweenService:Create(BoxStroke, TweenInfo.new(0.2), {Color = Theme.Border}):Play()
-        if callback then callback(TextBox.Text) end
-    end)
-end
-
--- ==========================================
--- 5. KOMPONEN: SLIDER
--- ==========================================
-function Tab:AddSlider(text, min, max, default, callback)
-    local SliderValue = math.clamp(default or min, min, max)
-
-    local SliderFrame = Instance.new("Frame")
-    SliderFrame.Size = UDim2.new(1, 0, 0, 46)
-    SliderFrame.BackgroundColor3 = Theme.Element
-    SliderFrame.Parent = self.Page
-    Instance.new("UICorner", SliderFrame).CornerRadius = UDim.new(0, 6)
-    Instance.new("UIStroke", SliderFrame).Color = Theme.Border
-
-    local Label = Instance.new("TextLabel")
-    Label.Size = UDim2.new(0.7, 0, 0, 20)
-    Label.Position = UDim2.new(0, 12, 0, 5)
-    Label.BackgroundTransparency = 1
-    Label.Text = text
-    Label.TextColor3 = Theme.TextMain
-    Label.TextXAlignment = Enum.TextXAlignment.Left
-    Label.Font = Enum.Font.GothamMedium
-    Label.TextSize = 12
-    Label.Parent = SliderFrame
-
-    local ValueLabel = Instance.new("TextLabel")
-    ValueLabel.Size = UDim2.new(0.3, 0, 0, 20)
-    ValueLabel.Position = UDim2.new(0.7, -12, 0, 5)
-    ValueLabel.BackgroundTransparency = 1
-    ValueLabel.Text = tostring(SliderValue)
-    ValueLabel.TextColor3 = Theme.TextDark
-    ValueLabel.TextXAlignment = Enum.TextXAlignment.Right
-    ValueLabel.Font = Enum.Font.Gotham
-    ValueLabel.TextSize = 11
-    ValueLabel.Parent = SliderFrame
-
-    local TrackBg = Instance.new("Frame")
-    TrackBg.Size = UDim2.new(1, -24, 0, 6)
-    TrackBg.Position = UDim2.new(0, 12, 0, 30)
-    TrackBg.BackgroundColor3 = Color3.fromRGB(15, 15, 17)
-    TrackBg.Parent = SliderFrame
-    Instance.new("UICorner", TrackBg).CornerRadius = UDim.new(1, 0)
-
-    local Fill = Instance.new("Frame")
-    Fill.Size = UDim2.new((SliderValue - min) / (max - min), 0, 1, 0)
-    Fill.BackgroundColor3 = Theme.Accent
-    Fill.Parent = TrackBg
-    Instance.new("UICorner", Fill).CornerRadius = UDim.new(1, 0)
-
-    local SliderBtn = Instance.new("TextButton")
-    SliderBtn.Size = UDim2.new(1, 0, 1, 0)
-    SliderBtn.BackgroundTransparency = 1
-    SliderBtn.Text = ""
-    SliderBtn.Parent = TrackBg
-
-    local dragging = false
-    local function updateSlider(input)
-        local pos = math.clamp((input.Position.X - TrackBg.AbsolutePosition.X) / TrackBg.AbsoluteSize.X, 0, 1)
-        SliderValue = math.floor(min + ((max - min) * pos))
-        ValueLabel.Text = tostring(SliderValue)
-        TweenService:Create(Fill, TweenInfo.new(0.1, Enum.EasingStyle.Quad), {Size = UDim2.new(pos, 0, 1, 0)}):Play()
-        if callback then callback(SliderValue) end
-    end
-
-    SliderBtn.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            updateSlider(input)
-        end
-    end)
-
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = false
-        end
-    end)
-
-    UserInputService.InputChanged:Connect(function(input)
-        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            updateSlider(input)
-        end
-    end)
-end
-
--- ==========================================
--- 6. KOMPONEN: KEYBIND
--- ==========================================
-function Tab:AddKeybind(text, defaultKey, callback)
-    local key = defaultKey or Enum.KeyCode.Unknown
-    local isBinding = false
-
-    local KeybindFrame = Instance.new("Frame")
-    KeybindFrame.Size = UDim2.new(1, 0, 0, 36)
-    KeybindFrame.BackgroundColor3 = Theme.Element
-    KeybindFrame.Parent = self.Page
-    Instance.new("UICorner", KeybindFrame).CornerRadius = UDim.new(0, 6)
-    Instance.new("UIStroke", KeybindFrame).Color = Theme.Border
-
-    local Label = Instance.new("TextLabel")
-    Label.Size = UDim2.new(0.6, 0, 1, 0)
-    Label.Position = UDim2.new(0, 12, 0, 0)
-    Label.BackgroundTransparency = 1
-    Label.Text = text
-    Label.TextColor3 = Theme.TextMain
-    Label.TextXAlignment = Enum.TextXAlignment.Left
-    Label.Font = Enum.Font.GothamMedium
-    Label.TextSize = 12
-    Label.Parent = KeybindFrame
-
-    local KeyBtnBg = Instance.new("Frame")
-    KeyBtnBg.Size = UDim2.new(0, 65, 0, 22)
-    KeyBtnBg.Position = UDim2.new(1, -77, 0.5, -11)
-    KeyBtnBg.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-    KeyBtnBg.Parent = KeybindFrame
-    Instance.new("UICorner", KeyBtnBg).CornerRadius = UDim.new(0, 4)
-    local KeyStroke = Instance.new("UIStroke", KeyBtnBg)
-    KeyStroke.Color = Theme.Border
-
-    local KeyBtn = Instance.new("TextButton")
-    KeyBtn.Size = UDim2.new(1, 0, 1, 0)
-    KeyBtn.BackgroundTransparency = 1
-    KeyBtn.Text = key == Enum.KeyCode.Unknown and "None" or key.Name
-    KeyBtn.TextColor3 = Theme.TextMain
-    KeyBtn.Font = Enum.Font.GothamMedium
-    KeyBtn.TextSize = 11
-    KeyBtn.Parent = KeyBtnBg
-
-    KeyBtn.MouseButton1Click:Connect(function()
-        isBinding = true
-        KeyBtn.Text = "..."
-        KeyStroke.Color = Theme.Accent
-    end)
-
-    UserInputService.InputBegan:Connect(function(input, processed)
-        if not isBinding and input.KeyCode == key and key ~= Enum.KeyCode.Unknown and not processed then
-            if callback then callback() end
-        end
-
-        if isBinding and input.UserInputType == Enum.UserInputType.Keyboard then
-            if input.KeyCode == Enum.KeyCode.Escape or input.KeyCode == Enum.KeyCode.Backspace then
-                key = Enum.KeyCode.Unknown
-                KeyBtn.Text = "None"
-            else
-                key = input.KeyCode
-                KeyBtn.Text = key.Name
-            end
-            isBinding = false
-            KeyStroke.Color = Theme.Border
-        end
-    end)
-end
-
--- ==========================================
--- 7. KOMPONEN: DROPDOWN & TOGGLE & BUTTON
--- ==========================================
-function Tab:AddDropdown(text, options, defaultOption, callback)
-    local isDropped = false
-    local selected = defaultOption or options[1] or "Select..."
-    
-    local DropdownFrame = Instance.new("Frame")
-    DropdownFrame.Size = UDim2.new(1, 0, 0, 36)
-    DropdownFrame.BackgroundColor3 = Theme.Element
-    DropdownFrame.ClipsDescendants = true
-    DropdownFrame.Parent = self.Page
-    Instance.new("UICorner", DropdownFrame).CornerRadius = UDim.new(0, 6)
-    Instance.new("UIStroke", DropdownFrame).Color = Theme.Border
-
-    local HeaderBtn = Instance.new("TextButton")
-    HeaderBtn.Size = UDim2.new(1, 0, 0, 36)
-    HeaderBtn.BackgroundTransparency = 1
-    HeaderBtn.Text = ""
-    HeaderBtn.Parent = DropdownFrame
-
-    local Title = Instance.new("TextLabel")
-    Title.Size = UDim2.new(0.5, 0, 1, 0)
-    Title.Position = UDim2.new(0, 12, 0, 0)
-    Title.BackgroundTransparency = 1
-    Title.Text = text
-    Title.TextColor3 = Theme.TextMain
-    Title.TextXAlignment = Enum.TextXAlignment.Left
-    Title.Font = Enum.Font.GothamMedium
-    Title.TextSize = 12
-    Title.Parent = HeaderBtn
-
-    local SelectedText = Instance.new("TextLabel")
-    SelectedText.Size = UDim2.new(0.4, 0, 1, 0)
-    SelectedText.Position = UDim2.new(0.6, -25, 0, 0)
-    SelectedText.BackgroundTransparency = 1
-    SelectedText.Text = selected
-    SelectedText.TextColor3 = Theme.TextDark
-    SelectedText.TextXAlignment = Enum.TextXAlignment.Right
-    SelectedText.Font = Enum.Font.Gotham
-    SelectedText.TextSize = 11
-    SelectedText.Parent = HeaderBtn
-
-    local Arrow = Instance.new("ImageLabel")
-    Arrow.Size = UDim2.new(0, 14, 0, 14)
-    Arrow.Position = UDim2.new(1, -20, 0.5, -7)
-    Arrow.BackgroundTransparency = 1
-    Arrow.Image = "rbxassetid://6031090390"
-    Arrow.ImageColor3 = Theme.TextDark
-    Arrow.Parent = HeaderBtn
-
-    local DropContainer = Instance.new("ScrollingFrame")
-    DropContainer.Size = UDim2.new(1, -10, 1, -40)
-    DropContainer.Position = UDim2.new(0, 5, 0, 38)
-    DropContainer.BackgroundTransparency = 1
-    DropContainer.ScrollBarThickness = 1
-    DropContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
-    DropContainer.Parent = DropdownFrame
-    local DropLayout = Instance.new("UIListLayout", DropContainer)
-    DropLayout.Padding = UDim.new(0, 2)
-
-    for _, opt in ipairs(options) do
-        local OptBtn = Instance.new("TextButton")
-        OptBtn.Size = UDim2.new(1, 0, 0, 26)
-        OptBtn.BackgroundColor3 = Color3.fromRGB(24, 24, 28)
-        OptBtn.Text = opt
-        OptBtn.TextColor3 = Theme.TextDark
-        OptBtn.Font = Enum.Font.Gotham
-        OptBtn.TextSize = 11
-        OptBtn.Parent = DropContainer
-        Instance.new("UICorner", OptBtn).CornerRadius = UDim.new(0, 4)
-
-        OptBtn.MouseEnter:Connect(function() TweenService:Create(OptBtn, TweenInfo.new(0.15), {BackgroundColor3 = Theme.Border, TextColor3 = Theme.TextMain}):Play() end)
-        OptBtn.MouseLeave:Connect(function() TweenService:Create(OptBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(24, 24, 28), TextColor3 = Theme.TextDark}):Play() end)
-
-        OptBtn.MouseButton1Click:Connect(function()
-            selected = opt
-            SelectedText.Text = selected
-            isDropped = false
-            TweenService:Create(DropdownFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quart), {Size = UDim2.new(1, 0, 0, 36)}):Play()
-            TweenService:Create(Arrow, TweenInfo.new(0.2), {Rotation = 0}):Play()
-            if callback then callback(selected) end
-        end)
-    end
-    
-    DropLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        DropContainer.CanvasSize = UDim2.new(0, 0, 0, DropLayout.AbsoluteContentSize.Y)
-    end)
-
-    HeaderBtn.MouseButton1Click:Connect(function()
-        isDropped = not isDropped
-        local targetHeight = isDropped and (38 + math.min(#options * 28, 120)) or 36
-        TweenService:Create(DropdownFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quart), {Size = UDim2.new(1, 0, 0, targetHeight)}):Play()
-        TweenService:Create(Arrow, TweenInfo.new(0.2), {Rotation = isDropped and 180 or 0}):Play()
-    end)
-end
-
-function Tab:AddToggle(text, defaultState, callback)
-    local state = defaultState or false
-    local ToggleFrame = Instance.new("Frame")
-    ToggleFrame.Size = UDim2.new(1, 0, 0, 36)
-    ToggleFrame.BackgroundColor3 = Theme.Element
-    ToggleFrame.Parent = self.Page
-    Instance.new("UICorner", ToggleFrame).CornerRadius = UDim.new(0, 6)
-    local ElementStroke = Instance.new("UIStroke", ToggleFrame)
-    ElementStroke.Color = Theme.Border
-
-    local Label = Instance.new("TextLabel")
-    Label.Size = UDim2.new(0.7, 0, 1, 0)
-    Label.Position = UDim2.new(0, 12, 0, 0)
-    Label.BackgroundTransparency = 1
-    Label.Text = text
-    Label.TextColor3 = Theme.TextMain
-    Label.TextXAlignment = Enum.TextXAlignment.Left
-    Label.Font = Enum.Font.GothamMedium
-    Label.TextSize = 12
-    Label.Parent = ToggleFrame
-
-    local ToggleBtn = Instance.new("TextButton")
-    ToggleBtn.Size = UDim2.new(0, 30, 0, 16)
-    ToggleBtn.Position = UDim2.new(1, -42, 0.5, -8)
-    ToggleBtn.BackgroundColor3 = state and Theme.Accent or Color3.fromRGB(30, 30, 35)
-    ToggleBtn.Text = ""
-    ToggleBtn.Parent = ToggleFrame
-    Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(1, 0)
-    
-    local InsideCircle = Instance.new("Frame", ToggleBtn)
-    InsideCircle.Size = UDim2.new(0, 10, 0, 10)
-    InsideCircle.Position = state and UDim2.new(1, -13, 0.5, -5) or UDim2.new(0, 3, 0.5, -5)
-    InsideCircle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    Instance.new("UICorner", InsideCircle).CornerRadius = UDim.new(1, 0)
-
-    [[ ToggleBtn.MouseButton1Click:Connect(function()
-        state = not state
-        TweenService:Create(ToggleBtn, TweenInfo.new(0.18), {BackgroundColor3 = state and Theme.Accent or Color3.fromRGB(30, 30, 35)}):Play()
-        TweenService:Create(InsideCircle, TweenInfo.new(0.15), {Position = state and UDim2.new(1, -13, 0.5, -5) or UDim2.new(0, 3, 0.5, -5)}):Play()
-        if callback then callback(state) end
-    end) ]]
-    ToggleBtn.MouseButton1Click:Connect(function()
-        state = not state
-        TweenService:Create(ToggleBtn, TweenInfo.new(0.18), {BackgroundColor3 = state and Theme.Accent or Color3.fromRGB(30, 30, 35)}):Play()
-        TweenService:Create(InsideCircle, TweenInfo.new(0.15), {Position = state and UDim2.new(1, -13, 0.5, -5) or UDim2.new(0, 3, 0.5, -5)}):Play()
-        if callback then callback(state) end
-    end)
-end
-
-function Tab:AddButton(text, callback)
-    local ButtonFrame = Instance.new("TextButton")
-    ButtonFrame.Size = UDim2.new(1, 0, 0, 34)
-    ButtonFrame.BackgroundColor3 = Theme.Element
-    ButtonFrame.Text = text
-    ButtonFrame.TextColor3 = Theme.TextMain
-    ButtonFrame.Font = Enum.Font.GothamMedium
-    ButtonFrame.TextSize = 12
-    ButtonFrame.Parent = self.Page
-    Instance.new("UICorner", ButtonFrame).CornerRadius = UDim.new(0, 6)
-    local BtnStroke = Instance.new("UIStroke", ButtonFrame)
-    BtnStroke.Color = Theme.Border
-
-    ButtonFrame.MouseEnter:Connect(function() TweenService:Create(BtnStroke, TweenInfo.new(0.2), {Color = Theme.Accent}):Play() end)
-    ButtonFrame.MouseLeave:Connect(function() TweenService:Create(BtnStroke, TweenInfo.new(0.2), {Color = Theme.Border}):Play() end)
-    
-    ButtonFrame.MouseButton1Click:Connect(function()
-        local origColor = ButtonFrame.BackgroundColor3
-        ButtonFrame.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
-        task.wait(0.08)
-        ButtonFrame.BackgroundColor3 = origColor
-        if callback then callback() end
-    end)
-end
-
-return UILibrary
+})
