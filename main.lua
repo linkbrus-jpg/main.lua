@@ -121,6 +121,21 @@ local waypoints = {
     {pos = Vector3.new(-3433.7, -189.4, 3.2), action = "Jump"},
     {pos = Vector3.new(-3420.6, -189.8, -13.7), action = "Run"},
     {pos = Vector3.new(-3417.9, -188.9, -77.4), action = "Run"},
+    {pos = Vector3.new(-3373.5, -177.7, -49.4), action = "Jump"},
+    {pos = Vector3.new(-3355.7, -171.1, -43.1), action = "Jump"},
+    {pos = Vector3.new(-3339.5, -159.7, -19.7), action = "Jump"},
+    {pos = Vector3.new(-3313.5, -148.1, -9.9), action = "Jump"},
+    {pos = Vector3.new(-3295.9, -136.6, 12.2), action = "Jump"},
+    {pos = Vector3.new(-3270.8, -126.6, 21.9), action = "Jump"},
+    {pos = Vector3.new(-3252.9, -114.8, 44.8), action = "Jump"},
+    {pos = Vector3.new(-3234.7, -105.2, 58.9), action = "Run"},
+    {pos = Vector3.new(-3212.1, -98.0, 73.1), action = "Run"},
+    {pos = Vector3.new(-3184.9, -104.1, 76.9), action = "Jump"},
+    {pos = Vector3.new(-3164.3, -111.9, 70.4), action = "Jump"},
+    {pos = Vector3.new(-3136.9, -122.5, 83.7), action = "Jump"},
+    {pos = Vector3.new(-3111.2, -132.3, 77.5), action = "Jump"},
+    {pos = Vector3.new(-3084.6, -144.0, 91.7), action = "Run"},
+    {pos = Vector3.new(-2968.3, -160.4, 140.4), action = "Run"},
 }
 
 local function applyStats(humanoid)
