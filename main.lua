@@ -587,7 +587,7 @@ Vector3.new(-5287.1, 467.8, 1468.0),
 -- INTERFACE WINDOW (WindUI)
 -- ====================================================================
 local Window = WindUI:CreateWindow({
-    Title = "My Super Hub",
+    Title = "Zyqrin Hub Test",
     Icon = "door-open",
     Author = "by .ftgs and .ftgs", 
 })
