@@ -310,7 +310,7 @@ local routes = {
         Vector3.new(-3912.4, 295.1, 1464.5),
         Vector3.new(-3938.4, 295.5, 1451.0),
     },
-     ["Pilihan 11"] = {
+ ["Pilihan 11"] = {
         Vector3.new(0.6, 7.5, 270.9),
         Vector3.new(53.4, 8.2, 398.2),
         Vector3.new(13.1, 7.5, 487.3),
@@ -353,9 +353,18 @@ local routes = {
         {pos = Vector3.new(-2851.6, 280.3, 1460.4), action = "jump"},
         Vector3.new(-2947.5, 295.1, 1466.5),
         Vector3.new(-3912.4, 295.1, 1464.5),
-        Vector3.new(-3992.9, 295.1, 1467.8),
-        {pos = Vector3.new(-4256.5, 455.8, 1530.0), action = "jump"}, 
-        Vector3.new(-4256.5, 455.8, 1530.0),
+        Vector3.new(-3990.0, 295.1, 1465.3),
+        {pos = Vector3.new(-4103.0, 295.1, 1466.7), action = "jump"}, 
+        Vector3.new(-4103.0, 295.1, 1466.7),
+        Vector3.new(-4181.2, 295.1, 1464.9),
+        {pos = Vector3.new(-4300.4, 295.1, 1467.3), action = "jump"},
+        Vector3.new(-4300.4, 295.1, 1467.3),
+        Vector3.new(-4307.3, 342.1, 1461.5),
+        Vector3.new(-4314.8, 342.1, 1485.5)
+        {pos = Vector3.new(-4323.2, 437.0, 1492.7), action = "jump"},
+        Vector3.new(-4323.2, 437.0, 1492.7),
+        Vector3.new(-4324.9, 437.0, 1508.3),
+        Vector3.new(-4325.5, 467.5, 1510.1),
         Vector3.new(-4361.1, 469.6, 1533.1),
         Vector3.new(-4367.7, 470.0, 1510.8),
     }
