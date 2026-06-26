@@ -773,7 +773,7 @@ local function startRoute(routeName)
                 
                 -- Sistem deteksi 2 mode udara
                 local isJump = type(data) == "table" and data.action == "jump"
-                local isFly = type(data) == "table" and (data.action == "fly" or data.action == "teleport")
+                local isFly = type(data) == "table" and data.action == "fly"
                 
                 warn(string.format("[BOT] %s -> Menuju koordinat ke-%d/%d [%.1f, %.1f, %.1f]", routeName, i, #waypoints, targetPos.X, targetPos.Y, targetPos.Z))
                 
@@ -782,7 +782,7 @@ local function startRoute(routeName)
                 
                 if isJump then
                     -- ================================================================
-                    -- MODE LOMPAT KILAT & PRESISI
+                    -- MODE LOMPAT KILAT & PRESISI (ANTI-BUG DETEKSI MATI)
                     -- ================================================================
                     local character = LocalPlayer.Character
                     local humanoid = character and character:FindFirstChild("Humanoid")
@@ -798,6 +798,7 @@ local function startRoute(routeName)
                         local elapsed = 0
                         
                         while elapsed < duration and isRunning do
+                            -- FIX BUG: Cek berkala apakah mati saat sedang meluncur di udara
                             if not humanoid or humanoid.Health <= 0 or not rootPart or not rootPart.Parent then
                                 playerDied = true
                                 break
@@ -815,6 +816,7 @@ local function startRoute(routeName)
                             rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                         end
                         
+                        -- KUNCI POSISI MUTLAK (Jika masih hidup)
                         if isRunning and not playerDied and humanoid and humanoid.Health > 0 and rootPart then
                             rootPart.CFrame = CFrame.new(targetPos) * rootPart.CFrame.Rotation
                             rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
@@ -827,20 +829,50 @@ local function startRoute(routeName)
 
                 elseif isFly then
                     -- ================================================================
-                    -- MODE TELEPORT INSTAN (PENGGANTI FLY LURUS)
+                    -- MODE TERBANG (AUTO-JUMP BAWAAN & MENDARAT PRESISI)
                     -- ================================================================
                     local character = LocalPlayer.Character
                     local humanoid = character and character:FindFirstChild("Humanoid")
                     local rootPart = character and character:FindFirstChild("HumanoidRootPart")
                     
                     if character and humanoid and rootPart and humanoid.Health > 0 then
-                        rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                        -- Hadapkan karakter ke arah target tujuan
+                        rootPart.CFrame = CFrame.new(rootPart.Position, Vector3.new(targetPos.X, rootPart.Position.Y, targetPos.Z))
                         
-                        -- Teleport langsung ke koordinat tujuan
-                        rootPart.CFrame = CFrame.new(targetPos) * rootPart.CFrame.Rotation
+                        -- Otomatis tekan tombol lompat bawaan Roblox agar masuk keadaan terbang/sayap aktif
+                        humanoid.Jump = true
+                        task.wait(0.2) -- Jeda aman agar engine game membaca status terbang
                         
-                        rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                        task.wait(0.05) 
+                        local startPos = rootPart.Position
+                        local distance = (targetPos - startPos).Magnitude
+                        
+                        local speed = 150 
+                        local duration = distance / speed
+                        local elapsed = 0
+                        
+                        while elapsed < duration and isRunning do
+                            if not humanoid or humanoid.Health <= 0 or not rootPart or not rootPart.Parent then
+                                playerDied = true
+                                break
+                            end
+                            
+                            local dt = task.wait()
+                            elapsed = elapsed + dt
+                            local t = math.clamp(elapsed / duration, 0, 1)
+                            
+                            local currentLerp = startPos:Lerp(targetPos, t)
+                            rootPart.CFrame = CFrame.new(currentLerp, targetPos)
+                            
+                            local direction = (targetPos - startPos).Unit
+                            rootPart.AssemblyLinearVelocity = direction * speed
+                        end
+                        
+                        -- Pendaratan presisi: Jatuh pas di koordinat selanjutnya
+                        if isRunning and not playerDied and humanoid and humanoid.Health > 0 and rootPart then
+                            rootPart.CFrame = CFrame.new(targetPos) * rootPart.CFrame.Rotation
+                            rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0) -- Matikan momentum agar tidak terpeleset
+                            task.wait(0.05) 
+                        end
                     else
                         playerDied = true
                     end
@@ -895,17 +927,17 @@ local function startRoute(routeName)
                 if not isRunning then break end
                 
                 -- ================================================================
-                -- LOGIK RESPONDING RE-RUN (JIKA MATI)
+                -- [LOGIK RESPONDING RE-RUN] Menunggu respawn sempurna jika mati
                 -- ================================================================
                 if playerDied then
-                    warn("[MATI] Karaktermu mati! Menunggu respawn otomatis...")
-                    LocalPlayer.CharacterAdded:Wait()
+                    print("[MATI] Karaktermu mati! Menunggu respawn otomatis...")
+                    LocalPlayer.CharacterAdded:Wait() 
                     task.wait(2) 
-                    warn("[BOT] Memulai ulang rute dari awal...")
+                    print("[BOT] Memulai ulang rute dari koordinat pertama...")
                     break 
                 end
                 
-                -- Cek Sampai Tujuan Akhir
+                -- CEK: Sampai Tujuan Akhir Rute
                 if i == #waypoints then
                     print("Sampai di tujuan akhir! Menunggu 5 detik...")
                     
