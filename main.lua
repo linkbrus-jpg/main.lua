@@ -86,6 +86,39 @@ task.spawn(function()
     end)
 end)
 
+-- 7. PENGHANCUR NPC ZONE 12 TOTAL (ANTI-JATUH & ANTI-NABRAK)
+    task.spawn(function()
+        while true do
+            pcall(function()
+                local npcPiege = workspace:FindFirstChild("NPC & Piege")
+                if npcPiege then
+                    local zone12 = npcPiege:FindFirstChild("NPC_Zone12")
+                    if zone12 then
+                        -- Hapus SpawnNpc12
+                        local spawnNpc = zone12:FindFirstChild("SpawnNpc12")
+                        if spawnNpc then 
+                            spawnNpc:Destroy() 
+                        end
+                        
+                        -- Hapus Sol (Lantai/pijakan NPC yang suka bikin nyangkut)
+                        local sol = zone12:FindFirstChild("Sol")
+                        if sol then 
+                            sol:Destroy() 
+                        end
+                        
+                        -- Hapus Zona Serang (Hitbox tabrakan)
+                        local attackZone = zone12:FindFirstChild("NPC12_AttackZone")
+                        if attackZone then 
+                            attackZone:Destroy() 
+                            warn("[CLEANER] NPC_Zone12 (Spawn, Sol, AttackZone) berhasil dihapus!")
+                        end
+                    end
+                end
+            end)
+            task.wait(1) -- Cek setiap 1 detik agar tidak lag, mengantisipasi jika NPC respawn
+        end
+    end)
+
 -- ====================================================================
 -- LOAD UI HUB
 -- ====================================================================
