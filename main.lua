@@ -3,6 +3,7 @@
 -- ====================================================================
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
 
 -- ====================================================================
@@ -721,6 +722,8 @@ Vector3.new(-5287.1, 467.8, 1468.0),
     }
 
 }
+
+
 -- ====================================================================
 -- INTERFACE WINDOW (WindUI)
 -- ====================================================================
@@ -782,7 +785,7 @@ local function startRoute(routeName)
                 
                 if isJump then
                     -- ================================================================
-                    -- MODE LOMPAT KILAT & PRESISI (ANTI-BUG DETEKSI MATI)
+                    -- MODE LOMPAT KILAT & PRESISI (SISTEM LAMA - TIDAK DIUBAH)
                     -- ================================================================
                     local character = LocalPlayer.Character
                     local humanoid = character and character:FindFirstChild("Humanoid")
@@ -798,7 +801,6 @@ local function startRoute(routeName)
                         local elapsed = 0
                         
                         while elapsed < duration and isRunning do
-                            -- FIX BUG: Cek berkala apakah mati saat sedang meluncur di udara
                             if not humanoid or humanoid.Health <= 0 or not rootPart or not rootPart.Parent then
                                 playerDied = true
                                 break
@@ -816,7 +818,6 @@ local function startRoute(routeName)
                             rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                         end
                         
-                        -- KUNCI POSISI MUTLAK (Jika masih hidup)
                         if isRunning and not playerDied and humanoid and humanoid.Health > 0 and rootPart then
                             rootPart.CFrame = CFrame.new(targetPos) * rootPart.CFrame.Rotation
                             rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
@@ -829,7 +830,7 @@ local function startRoute(routeName)
 
                 elseif isFly then
                     -- ================================================================
-                    -- MODE TERBANG (AUTO-JUMP BAWAAN & MENDARAT PRESISI)
+                    -- MODE TERBANG (DIPERBAIKI AGAR BEKERJA SEMPURNA / ANTI JATUH)
                     -- ================================================================
                     local character = LocalPlayer.Character
                     local humanoid = character and character:FindFirstChild("Humanoid")
@@ -837,40 +838,47 @@ local function startRoute(routeName)
                     
                     if character and humanoid and rootPart and humanoid.Health > 0 then
                         -- Hadapkan karakter ke arah target tujuan
-                        rootPart.CFrame = CFrame.new(rootPart.Position, Vector3.new(targetPos.X, rootPart.Position.Y, targetPos.Z))
+                        rootPart.CFrame = CFrame.new(rootPart.Position, targetPos)
                         
                         -- Otomatis tekan tombol lompat bawaan Roblox agar masuk keadaan terbang/sayap aktif
                         humanoid.Jump = true
-                        task.wait(0.2) -- Jeda aman agar engine game membaca status terbang
+                        task.wait(0.15) 
                         
                         local startPos = rootPart.Position
                         local distance = (targetPos - startPos).Magnitude
                         
-                        local speed = 150 
+                        local speed = 150 -- Kecepatan terbang
                         local duration = distance / speed
-                        local elapsed = 0
                         
+                        -- Menggunakan TweenService agar meluncur lurus sempurna
+                        local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Linear)
+                        local flyTween = TweenService:Create(rootPart, tweenInfo, {CFrame = CFrame.new(targetPos)})
+                        
+                        -- BodyVelocity menahan gaya tarik gravitasi selama proses terbang
+                        local bv = Instance.new("BodyVelocity")
+                        bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                        bv.Velocity = Vector3.new(0, 0, 0)
+                        bv.Parent = rootPart
+                        
+                        flyTween:Play()
+                        
+                        local elapsed = 0
                         while elapsed < duration and isRunning do
                             if not humanoid or humanoid.Health <= 0 or not rootPart or not rootPart.Parent then
                                 playerDied = true
                                 break
                             end
-                            
-                            local dt = task.wait()
-                            elapsed = elapsed + dt
-                            local t = math.clamp(elapsed / duration, 0, 1)
-                            
-                            local currentLerp = startPos:Lerp(targetPos, t)
-                            rootPart.CFrame = CFrame.new(currentLerp, targetPos)
-                            
-                            local direction = (targetPos - startPos).Unit
-                            rootPart.AssemblyLinearVelocity = direction * speed
+                            elapsed = elapsed + task.wait()
                         end
                         
-                        -- Pendaratan presisi: Jatuh pas di koordinat selanjutnya
+                        -- Bersihkan efek setelah terbang selesai
+                        if bv then bv:Destroy() end
+                        flyTween:Cancel()
+                        
+                        -- Pendaratan presisi
                         if isRunning and not playerDied and humanoid and humanoid.Health > 0 and rootPart then
                             rootPart.CFrame = CFrame.new(targetPos) * rootPart.CFrame.Rotation
-                            rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0) -- Matikan momentum agar tidak terpeleset
+                            rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                             task.wait(0.05) 
                         end
                     else
@@ -880,7 +888,7 @@ local function startRoute(routeName)
 
                 else
                     -- ================================================================
-                    -- MODE LARI NORMAL
+                    -- MODE LARI NORMAL (SISTEM LAMA - TIDAK DIUBAH)
                     -- ================================================================
                     local connection
                     connection = RunService.RenderStepped:Connect(function()
