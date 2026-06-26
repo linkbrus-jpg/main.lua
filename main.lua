@@ -605,7 +605,7 @@ local waypoints = {
     {pos = Vector3.new(-1645.6, 792.2, 3737.5), action = "Jump"},
     {pos = Vector3.new(-1666.1, 801.1, 3744.7), action = "Run"},
     {pos = Vector3.new(-1694.3, 844.3, 3786.0), action = "Jump"},
-    {pos = Vector3.new(-1693.7, 856.5, 3801.9), action = "Run"},
+    {pos = Vector3.new(-1664.3, 850.1, 3896.3), action = "Run"},
     {pos = Vector3.new(-1723.4, 856.5, 3830.9), action = "Jump"},
     {pos = Vector3.new(-1744.1, 858.8, 3843.0), action = "Run"},
     {pos = Vector3.new(-1752.6, 869.7, 3829.5), action = "Run"},
