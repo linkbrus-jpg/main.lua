@@ -360,7 +360,7 @@ local routes = {
         {pos = Vector3.new(-4300.4, 295.1, 1467.3), action = "jump"},
         Vector3.new(-4300.4, 295.1, 1467.3),
         Vector3.new(-4307.3, 342.1, 1461.5),
-        Vector3.new(-4314.8, 342.1, 1485.5)
+        Vector3.new(-4314.8, 342.1, 1485.5),
         {pos = Vector3.new(-4323.2, 437.0, 1492.7), action = "jump"},
         Vector3.new(-4323.2, 437.0, 1492.7),
         Vector3.new(-4324.9, 437.0, 1508.3),
