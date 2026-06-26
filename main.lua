@@ -226,26 +226,26 @@ local routes = {
         Vector3.new(-1002.7, 53.1, 1465.2),
         Vector3.new(-1087.4, 51.5, 1465.4),
         Vector3.new(-1094.3, 295.1, 1462.1),
-        -- Rute Log Baru (Menggunakan penanda khusus jika harus dilompati)
-        Vector3.new(-1242.5, 301.8, 1463.6), -- (1) lari ke sini
-        {pos = Vector3.new(-1351.7, 280.8, 1472.8), action = "jump"}, -- (2) dituju dengan MELOMPAT PAS
-        Vector3.new(-1500.1, 335.3, 1464.8), -- (3) lari ke sini
-        {pos = Vector3.new(-1563.2, 319.7, 1464.2), action = "jump"}, -- (4) dituju dengan MELOMPAT PAS
-        Vector3.new(-1621.8, 319.7, 1471.3), -- (5) lari ke sini
-        {pos = Vector3.new(-1751.8, 287.9, 1470.9), action = "jump"}, -- (6) dituju dengan MELOMPAT PAS
-        Vector3.new(-1861.7, 314.3, 1444.8), -- (7) lari ke sini
-        {pos = Vector3.new(-1942.6, 304.5, 1469.0), action = "jump"}, -- (8) dituju dengan MELOMPAT PAS
-        Vector3.new(-2041.3, 304.5, 1462.4), -- (9) lari ke sini
-        {pos = Vector3.new(-2123.7, 303.4, 1471.0), action = "jump"}, -- (10) dituju dengan MELOMPAT PAS
-        Vector3.new(-2176.7, 321.8, 1467.3), -- (11) lari ke sini
-        {pos = Vector3.new(-2242.2, 311.1, 1463.8), action = "jump"}, -- (12) dituju dengan MELOMPAT PAS
-        Vector3.new(-2341.5, 321.7, 1461.3), -- (13) lari ke sini
-        {pos = Vector3.new(-2407.3, 319.8, 1464.0), action = "jump"}, -- (14) dituju dengan MELOMPAT PAS
-        Vector3.new(-2524.7, 319.8, 1455.0), -- (15) lari biasa
-        Vector3.new(-2594.5, 291.3, 1487.4), -- (16) lari biasa
-        Vector3.new(-2708.5, 291.3, 1481.8), -- (17) lari biasa
-        Vector3.new(-2780.6, 302.9, 1462.9), -- (18) lari ke sini
-        {pos = Vector3.new(-2851.6, 280.3, 1460.4), action = "jump"}  -- (19) dituju dengan MELOMPAT PAS (Akhir)
+        -- Rute Teroptimasi (Lompat Cepat & Kunci Koordinat Pas)
+        Vector3.new(-1242.5, 301.8, 1463.6), 
+        {pos = Vector3.new(-1351.7, 280.8, 1472.8), action = "jump"}, 
+        Vector3.new(-1500.1, 335.3, 1464.8), 
+        {pos = Vector3.new(-1563.2, 319.7, 1464.2), action = "jump"}, 
+        Vector3.new(-1621.8, 319.7, 1471.3), 
+        {pos = Vector3.new(-1751.8, 287.9, 1470.9), action = "jump"}, 
+        Vector3.new(-1861.7, 314.3, 1444.8), 
+        {pos = Vector3.new(-1942.6, 304.5, 1469.0), action = "jump"}, 
+        Vector3.new(-2041.3, 304.5, 1462.4), 
+        {pos = Vector3.new(-2123.7, 303.4, 1471.0), action = "jump"}, 
+        Vector3.new(-2176.7, 321.8, 1467.3), 
+        {pos = Vector3.new(-2242.2, 311.1, 1463.8), action = "jump"}, 
+        Vector3.new(-2341.5, 321.7, 1461.3), 
+        {pos = Vector3.new(-2407.3, 319.8, 1464.0), action = "jump"}, 
+        Vector3.new(-2524.7, 319.8, 1455.0), 
+        Vector3.new(-2594.5, 291.3, 1487.4), 
+        Vector3.new(-2708.5, 291.3, 1481.8), 
+        Vector3.new(-2780.6, 302.9, 1462.9), 
+        {pos = Vector3.new(-2851.6, 280.3, 1460.4), action = "jump"}  
     }
 }
 
@@ -293,7 +293,6 @@ local function startRoute(routeName)
             for i, data in ipairs(waypoints) do
                 if not isRunning then break end
                 
-                -- Deteksi otomatis apakah tipe data berbentuk Table (Lompat) atau Vector3 biasa (Lari)
                 local targetPos = type(data) == "table" and data.pos or data
                 local isJump = type(data) == "table" and data.action == "jump"
                 
@@ -304,20 +303,20 @@ local function startRoute(routeName)
                 
                 if isJump then
                     -- ================================================================
-                    -- MODE LOMPAT PARABOLA PRESISI (ANTI-FALL / JATUH PAS DI TARGET)
+                    -- MODE LOMPAT KILAT & PRESISI (ANTI-BUG)
                     -- ================================================================
                     local character = LocalPlayer.Character
                     local humanoid = character and character:FindFirstChild("Humanoid")
                     local rootPart = character and character:FindFirstChild("HumanoidRootPart")
                     
                     if character and humanoid and rootPart and humanoid.Health > 0 then
-                        humanoid.Jump = true -- Aktifkan animasi lompat agar terlihat natural
+                        humanoid.Jump = true 
                         
                         local startPos = rootPart.Position
                         local distance = (targetPos - startPos).Magnitude
                         
-                        -- Mengatur durasi waktu meluncur di udara berdasarkan jarak (Kecepatan ~32 studs/detik)
-                        local duration = math.clamp(distance / 32, 0.3, 1.5)
+                        -- Mengatur durasi waktu meluncur (Dinaikkan menjadi speed 150 studs/sec, max cuma 0.4 detik)
+                        local duration = math.clamp(distance / 150, 0.15, 0.4)
                         local elapsed = 0
                         
                         while elapsed < duration and isRunning and humanoid.Health > 0 do
@@ -325,26 +324,26 @@ local function startRoute(routeName)
                             elapsed = elapsed + dt
                             local t = math.clamp(elapsed / duration, 0, 1)
                             
-                            -- Membuat lengkungan lompat ke atas (Parabola)
-                            local peakHeight = math.clamp(distance * 0.15, 6, 14)
+                            -- Lengkungan dibuat lebih rendah agar melesat cepat ke depan
+                            local peakHeight = math.clamp(distance * 0.08, 2, 6)
                             local currentArc = math.sin(t * math.pi) * peakHeight
                             
                             local currentLerp = startPos:Lerp(targetPos, t)
-                            -- Geser posisi karakter secara halus di client side
                             rootPart.CFrame = CFrame.new(currentLerp.X, currentLerp.Y + currentArc, currentLerp.Z) * rootPart.CFrame.Rotation
-                            rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0) -- Hapus gravitasi agar tidak ketarik ke bawah mid-air
+                            rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0) -- Hapus gravitasi instan selama meluncur
                         end
                         
-                        -- LOCK POSISI: Paksa mendarat pas di koordinat target setelah waktu habis
+                        -- KUNCI POSISI MUTLAK (Harus Pas!)
                         if isRunning and humanoid.Health > 0 then
                             rootPart.CFrame = CFrame.new(targetPos) * rootPart.CFrame.Rotation
                             rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                            task.wait(0.02) -- Freeze physics sesaat agar posisi tidak bergeser
                         end
                     end
                     reached = true
                 else
                     -- ================================================================
-                    -- MODE LARI NORMAL (MENGGUNAKAN RUNSERVICE)
+                    -- MODE LARI NORMAL
                     -- ================================================================
                     local connection
                     connection = RunService.RenderStepped:Connect(function()
