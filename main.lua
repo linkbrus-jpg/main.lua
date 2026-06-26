@@ -67,6 +67,23 @@ task.spawn(function()
         end)
         warn("[ANTI-FALL] Jembatan 'Stud Part' sekarang terkunci solid permanen!")
     end)
+
+    -- 6. PENGHANCUR HITBOX NPC10 OTOMATIS (ANTI-HIT RE-LOOP)
+    task.spawn(function()
+        while true do
+            pcall(function()
+                local npc10 = workspace:FindFirstChild("NPC10")
+                if npc10 then
+                    local hitbox = npc10:FindFirstChild("Hitbox")
+                    if hitbox then
+                        hitbox:Destroy()
+                        warn("[ANTI-HIT] Hitbox NPC10 Berhasil Dilenyapkan!")
+                    end
+                end
+            end)
+            task.wait(0.5) -- Cek setiap setengah detik untuk antisipasi NPC respawn
+        end
+    end)
 end)
 
 -- ====================================================================
@@ -226,7 +243,6 @@ local routes = {
         Vector3.new(-1002.7, 53.1, 1465.2),
         Vector3.new(-1087.4, 51.5, 1465.4),
         Vector3.new(-1094.3, 295.1, 1462.1),
-        -- Rute Teroptimasi (Lompat Cepat & Kunci Koordinat Pas)
         Vector3.new(-1242.5, 301.8, 1463.6), 
         {pos = Vector3.new(-1351.7, 280.8, 1472.8), action = "jump"}, 
         Vector3.new(-1500.1, 335.3, 1464.8), 
@@ -305,7 +321,7 @@ local function startRoute(routeName)
                 
                 if isJump then
                     -- ================================================================
-                    -- MODE LOMPAT KILAT & PRESISI (ANTI-BUG)
+                    -- MODE LOMPAT KILAT & PRESISI (ANTI-BUG DETEKSI MATI)
                     -- ================================================================
                     local character = LocalPlayer.Character
                     local humanoid = character and character:FindFirstChild("Humanoid")
@@ -317,30 +333,36 @@ local function startRoute(routeName)
                         local startPos = rootPart.Position
                         local distance = (targetPos - startPos).Magnitude
                         
-                        -- Mengatur durasi waktu meluncur (Dinaikkan menjadi speed 150 studs/sec, max cuma 0.4 detik)
                         local duration = math.clamp(distance / 150, 0.15, 0.4)
                         local elapsed = 0
                         
-                        while elapsed < duration and isRunning and humanoid.Health > 0 do
+                        while elapsed < duration and isRunning do
+                            -- FIX BUG: Cek berkala apakah mati saat sedang meluncur di udara
+                            if not humanoid or humanoid.Health <= 0 or not rootPart or not rootPart.Parent then
+                                playerDied = true
+                                break
+                            end
+                            
                             local dt = task.wait()
                             elapsed = elapsed + dt
                             local t = math.clamp(elapsed / duration, 0, 1)
                             
-                            -- Lengkungan dibuat lebih rendah agar melesat cepat ke depan
                             local peakHeight = math.clamp(distance * 0.08, 2, 6)
                             local currentArc = math.sin(t * math.pi) * peakHeight
                             
                             local currentLerp = startPos:Lerp(targetPos, t)
                             rootPart.CFrame = CFrame.new(currentLerp.X, currentLerp.Y + currentArc, currentLerp.Z) * rootPart.CFrame.Rotation
-                            rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0) -- Hapus gravitasi instan selama meluncur
+                            rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                         end
                         
-                        -- KUNCI POSISI MUTLAK (Harus Pas!)
-                        if isRunning and humanoid.Health > 0 then
+                        -- KUNCI POSISI MUTLAK (Jika masih hidup)
+                        if isRunning and not playerDied and humanoid and humanoid.Health > 0 and rootPart then
                             rootPart.CFrame = CFrame.new(targetPos) * rootPart.CFrame.Rotation
                             rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                            task.wait(0.02) -- Freeze physics sesaat agar posisi tidak bergeser
+                            task.wait(0.02)
                         end
+                    else
+                        playerDied = true
                     end
                     reached = true
                 else
@@ -391,10 +413,11 @@ local function startRoute(routeName)
                 
                 if not isRunning then break end
                 
-                -- [LOGIK MATI] Mulai ulang rute setelah delay 5 detik
+                -- [LOGIK RESPONDING RE-RUN] Menunggu respawn sempurna jika mati
                 if playerDied then
-                    print("[MATI] Karaktermu mati! Menunggu respawn + delay 5 detik...")
-                    task.wait(5)
+                    print("[MATI] Karaktermu mati! Menunggu respawn otomatis...")
+                    LocalPlayer.CharacterAdded:Wait() -- Menunggu tubuh baru terbuat sempurna
+                    task.wait(2) -- Delay aman agar game memuat physics karakter baru
                     print("[BOT] Memulai ulang rute dari koordinat pertama...")
                     break 
                 end
@@ -432,7 +455,7 @@ local function stopRoute()
     print("Auto Run dihentikan.")
 end
 
--- 2. TOGGLE UNTUK MEMULAI PERJALANAN
+-- TOGGLE UNTUK MEMULAI PERJALANAN
 local Toggle = Tab:Toggle({
     Title = "Mulai Perjalanan",
     Desc = "Nyalakan untuk menjalankan rute yang dipilih di atas",
