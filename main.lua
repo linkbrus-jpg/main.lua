@@ -706,29 +706,22 @@ Vector3.new(-5159.7, 467.8, 1383.7),
 Vector3.new(-5229.3, 467.8, 1376.9),
 Vector3.new(-5224.9, 467.8, 1462.1),
 Vector3.new(-5287.1, 467.8, 1468.0),
-                Vector3.new(-5336.2, 469.2, 1475.3),
         Vector3.new(-5365.1, 469.2, 1476.5),
         Vector3.new(-5374.5, 472.1, 1476.1),
-        {pos = Vector3.new(-5408.1, 474.0, 1478.5), action = "jump"},
-        Vector3.new(-5408.1, 474.0, 1478.5),
+        {pos = Vector3.new(-5408.1, 474.0, 1478.5), action = "fly"},
         Vector3.new(-5637.0, 475.5, 1321.5),
-        {pos = Vector3.new(-5677.6, 482.1, 1356.2), action = "jump"},
-        Vector3.new(-5677.6, 482.1, 1356.2),
+        {pos = Vector3.new(-5677.6, 482.1, 1356.2), action = "fly"},
         Vector3.new(-5863.8, 475.9, 1571.4),
-        {pos = Vector3.new(-5920.4, 479.6, 1560.9), action = "jump"},
-        Vector3.new(-5920.4, 479.6, 1560.9),
+        {pos = Vector3.new(-5920.4, 479.6, 1560.9), action = "fly"},
         Vector3.new(-6170.6, 478.3, 1418.3),
-        {pos = Vector3.new(-6198.5, 480.2, 1449.9), action = "jump"},
-        Vector3.new(-6198.5, 480.2, 1449.9),
+        {pos = Vector3.new(-6198.5, 480.2, 1449.9), action = "fly"},
         Vector3.new(-6454.3, 476.1, 1382.0),
-        {pos = Vector3.new(-6504.1, 480.3, 1371.6), action = "jump"},
-        Vector3.new(-6504.1, 480.3, 1371.6),
+        {pos = Vector3.new(-6504.1, 480.3, 1371.6), action = "fly"},
         Vector3.new(-6737.0, 503.0, 1490.2),
     }
 
 }
 
--- ====================================================================
 -- INTERFACE WINDOW (WindUI)
 -- ====================================================================
 local Window = WindUI:CreateWindow({
@@ -773,7 +766,10 @@ local function startRoute(routeName)
                 if not isRunning then break end
                 
                 local targetPos = type(data) == "table" and data.pos or data
+                
+                -- Sistem deteksi 2 mode udara
                 local isJump = type(data) == "table" and data.action == "jump"
+                local isFly = type(data) == "table" and data.action == "fly"
                 
                 warn(string.format("[BOT] %s -> Menuju koordinat ke-%d/%d [%.1f, %.1f, %.1f]", routeName, i, #waypoints, targetPos.X, targetPos.Y, targetPos.Z))
                 
@@ -826,6 +822,49 @@ local function startRoute(routeName)
                         playerDied = true
                     end
                     reached = true
+
+                elseif isFly then
+                    -- ================================================================
+                    -- MODE TERBANG / LUNCURAN LURUS (TANPA LENGKUNGAN & JATUH)
+                    -- ================================================================
+                    local character = LocalPlayer.Character
+                    local humanoid = character and character:FindFirstChild("Humanoid")
+                    local rootPart = character and character:FindFirstChild("HumanoidRootPart")
+                    
+                    if character and humanoid and rootPart and humanoid.Health > 0 then
+                        local startPos = rootPart.Position
+                        local distance = (targetPos - startPos).Magnitude
+                        
+                        local speed = 150 
+                        local duration = math.max(distance / speed, 0.1)
+                        local elapsed = 0
+                        
+                        while elapsed < duration and isRunning do
+                            if not humanoid or humanoid.Health <= 0 or not rootPart or not rootPart.Parent then
+                                playerDied = true
+                                break
+                            end
+                            
+                            local dt = task.wait()
+                            elapsed = elapsed + dt
+                            local t = math.clamp(elapsed / duration, 0, 1)
+                            
+                            -- Menarik lurus ke tujuan tanpa terpengaruh gravitasi
+                            local currentLerp = startPos:Lerp(targetPos, t)
+                            rootPart.CFrame = CFrame.new(currentLerp) * rootPart.CFrame.Rotation
+                            rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                        end
+                        
+                        if isRunning and not playerDied and humanoid and humanoid.Health > 0 and rootPart then
+                            rootPart.CFrame = CFrame.new(targetPos) * rootPart.CFrame.Rotation
+                            rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                            task.wait(0.05)
+                        end
+                    else
+                        playerDied = true
+                    end
+                    reached = true
+
                 else
                     -- ================================================================
                     -- MODE LARI NORMAL
