@@ -722,6 +722,7 @@ Vector3.new(-5287.1, 467.8, 1468.0),
 
 }
 
+-- ====================================================================
 -- INTERFACE WINDOW (WindUI)
 -- ====================================================================
 local Window = WindUI:CreateWindow({
@@ -760,7 +761,11 @@ local function startRoute(routeName)
     currentTask = task.spawn(function()
         while isRunning do
             local waypoints = routes[routeName]
-            if not waypoints then break end
+            if not waypoints then 
+                warn("[BOT] Rute " .. tostring(routeName) .. " belum diatur datanya!")
+                isRunning = false
+                break 
+            end
             
             for i, data in ipairs(waypoints) do
                 if not isRunning then break end
@@ -794,7 +799,6 @@ local function startRoute(routeName)
                         local elapsed = 0
                         
                         while elapsed < duration and isRunning do
-                            -- FIX BUG: Cek berkala apakah mati saat sedang meluncur di udara
                             if not humanoid or humanoid.Health <= 0 or not rootPart or not rootPart.Parent then
                                 playerDied = true
                                 break
@@ -812,7 +816,6 @@ local function startRoute(routeName)
                             rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                         end
                         
-                        -- KUNCI POSISI MUTLAK (Jika masih hidup)
                         if isRunning and not playerDied and humanoid and humanoid.Health > 0 and rootPart then
                             rootPart.CFrame = CFrame.new(targetPos) * rootPart.CFrame.Rotation
                             rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
@@ -825,40 +828,50 @@ local function startRoute(routeName)
 
                 elseif isFly then
                     -- ================================================================
-                    -- MODE TERBANG / LUNCURAN LURUS (TANPA LENGKUNGAN & JATUH)
+                    -- MODE TERBANG PRESISI & DINAMIS (ANTI-JATUH)
                     -- ================================================================
                     local character = LocalPlayer.Character
                     local humanoid = character and character:FindFirstChild("Humanoid")
                     local rootPart = character and character:FindFirstChild("HumanoidRootPart")
                     
                     if character and humanoid and rootPart and humanoid.Health > 0 then
+                        -- Pemicu agar sayap/mode terbang aktif di udara
+                        humanoid.Jump = true 
+                        task.wait(0.05) 
+
                         local startPos = rootPart.Position
-                        local distance = (targetPos - startPos).Magnitude
+                        local targetVec = targetPos - startPos
+                        local distance = targetVec.Magnitude
+
+                        -- BATAS WAKTU MAKSIMAL TERBANG (Sesuaikan jika masih jatuh)
+                        local maxWingDuration = 1.5 
+                        local duration = math.clamp(distance / 200, 0.2, maxWingDuration)
+                        local requiredSpeed = distance / duration
                         
-                        local speed = 150 
-                        local duration = math.max(distance / speed, 0.1)
                         local elapsed = 0
-                        
+                        rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+
                         while elapsed < duration and isRunning do
                             if not humanoid or humanoid.Health <= 0 or not rootPart or not rootPart.Parent then
                                 playerDied = true
                                 break
                             end
                             
+                            -- Beri dorongan velocity linear agar game membaca movement
+                            rootPart.AssemblyLinearVelocity = targetVec.Unit * requiredSpeed 
+                            
                             local dt = task.wait()
                             elapsed = elapsed + dt
                             local t = math.clamp(elapsed / duration, 0, 1)
                             
-                            -- Menarik lurus ke tujuan tanpa terpengaruh gravitasi
                             local currentLerp = startPos:Lerp(targetPos, t)
-                            rootPart.CFrame = CFrame.new(currentLerp) * rootPart.CFrame.Rotation
-                            rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                            rootPart.CFrame = CFrame.new(currentLerp, targetPos) 
                         end
                         
                         if isRunning and not playerDied and humanoid and humanoid.Health > 0 and rootPart then
-                            rootPart.CFrame = CFrame.new(targetPos) * rootPart.CFrame.Rotation
+                            rootPart.CFrame = CFrame.new(targetPos, targetPos + targetVec.Unit)
                             rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                            task.wait(0.05)
+                            task.wait(0.05) 
                         end
                     else
                         playerDied = true
@@ -913,16 +926,18 @@ local function startRoute(routeName)
                 
                 if not isRunning then break end
                 
-                -- [LOGIK RESPONDING RE-RUN] Menunggu respawn sempurna jika mati
+                -- ================================================================
+                -- LOGIK RESPONDING RE-RUN
+                -- ================================================================
                 if playerDied then
-                    print("[MATI] Karaktermu mati! Menunggu respawn otomatis...")
-                    LocalPlayer.CharacterAdded:Wait() -- Menunggu tubuh baru terbuat sempurna
-                    task.wait(2) -- Delay aman agar game memuat physics karakter baru
-                    print("[BOT] Memulai ulang rute dari koordinat pertama...")
+                    warn("[MATI] Karaktermu mati! Menunggu respawn otomatis...")
+                    LocalPlayer.CharacterAdded:Wait()
+                    task.wait(2) 
+                    warn("[BOT] Memulai ulang rute dari awal...")
                     break 
                 end
                 
-                -- CEK: Sampai Tujuan Akhir Rute
+                -- Cek Sampai Tujuan Akhir
                 if i == #waypoints then
                     print("Sampai di tujuan akhir! Menunggu 5 detik...")
                     
@@ -955,7 +970,9 @@ local function stopRoute()
     print("Auto Run dihentikan.")
 end
 
--- TOGGLE UNTUK MEMULAI PERJALANAN
+-- ====================================================================
+-- UI TOGGLE EKSEKUSI
+-- ====================================================================
 local Toggle = Tab:Toggle({
     Title = "Mulai Perjalanan",
     Desc = "Nyalakan untuk menjalankan rute yang dipilih di atas",
