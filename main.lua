@@ -762,6 +762,22 @@ local Dropdown = Tab:Dropdown({
 })
 
 -- ====================================================================
+-- SISTEM NOCLIP (TEMBUS TEMBOK) SAAT AUTO FARM
+-- ====================================================================
+RunService.Stepped:Connect(function()
+    if isRunning then
+        local character = LocalPlayer.Character
+        if character then
+            for _, part in ipairs(character:GetDescendants()) do
+                if part:IsA("BasePart") and part.CanCollide then
+                    part.CanCollide = false
+                end
+            end
+        end
+    end
+end)
+
+-- ====================================================================
 -- FUNGSI UTAMA PERGERAKAN BOT
 -- ====================================================================
 local function startRoute(routeName)
@@ -828,24 +844,21 @@ local function startRoute(routeName)
                     end
                     reached = true
                 else
-                    -- ================================================================
-                    -- MODE LARI NORMAL
+                -- ================================================================
+                    -- MODE LARI NORMAL (Tahan Lag & Anti-Stuck)
                     -- ================================================================
                     local connection
-                    connection = RunService.RenderStepped:Connect(function()
+                    local stuckTimer = 0
+                    local lastPosition = Vector3.new()
+                    
+                    connection = RunService.Heartbeat:Connect(function(dt)
                         local character = LocalPlayer.Character
                         local humanoid = character and character:FindFirstChild("Humanoid")
                         local rootPart = character and character:FindFirstChild("HumanoidRootPart")
                         
-                        if not isRunning then
+                        if not isRunning or not character or not humanoid or not rootPart or humanoid.Health <= 0 then
                             if connection then connection:Disconnect() end
-                            reached = true
-                            return
-                        end
-                        
-                        if not character or not character.Parent or not humanoid or not rootPart or humanoid.Health <= 0 then
-                            if connection then connection:Disconnect() end
-                            playerDied = true
+                            playerDied = (humanoid and humanoid.Health <= 0)
                             reached = true
                             return
                         end
@@ -855,17 +868,37 @@ local function startRoute(routeName)
                         local flatTargetPos = Vector3.new(targetPos.X, currentPos.Y, targetPos.Z)
                         local distance = (flatTargetPos - currentPos).Magnitude
                         
-                        if distance < 2.5 then 
+                        -- 1. Toleransi jarak diperbesar (dari 2.5 ke 4.5) untuk mengantisipasi Lag/Ping tinggi
+                        if distance < 4.5 then 
                             if connection then connection:Disconnect() end
                             
                             rootPart.CFrame = CFrame.new(flatTargetPos.X, rootPart.Position.Y, flatTargetPos.Z) * rootPart.CFrame.Rotation
-                            rootPart.AssemblyLinearVelocity = Vector3.new(0, rootPart.AssemblyLinearVelocity.Y, 0)
+                            rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                             humanoid:Move(Vector3.new(0, 0, 0)) 
                             
                             reached = true
                             return
                         end
                         
+                        -- 2. Sistem Anti-Stuck (Jika karakter diam di tempat meski sedang lari)
+                        if lastPosition ~= Vector3.new() then
+                            local movedDistance = (currentPos - lastPosition).Magnitude
+                            if movedDistance < 0.1 then -- Karakter nyangkut/nge-lag parah
+                                stuckTimer = stuckTimer + dt
+                                if stuckTimer > 2 then
+                                    -- Kalau nyangkut lebih dari 2 detik, teleport paksa sedikit ke depan
+                                    rootPart.CFrame = CFrame.new(currentPos, flatTargetPos) * CFrame.new(0, 0, -2)
+                                    stuckTimer = 0
+                                    warn("[ANTI-STUCK] Lag terdeteksi, memajukan karakter...")
+                                end
+                            else
+                                stuckTimer = 0
+                            end
+                        end
+                        
+                        lastPosition = currentPos
+                        
+                        -- 3. Perintah Bergerak
                         local direction = (flatTargetPos - currentPos).Unit
                         humanoid:Move(direction, false)
                     end)
